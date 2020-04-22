@@ -1,0 +1,7 @@
+#files
+*.vs
+
+# Directories
+/Debug
+/x64
+/books

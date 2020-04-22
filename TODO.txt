@@ -1,0 +1,12 @@
+Camera class (partially done fps have to fix to be better handling check learnopengl comment section)
+
+Model classes
+Object loading(starting from simples + adding)
+imgui 
+code structure APP class changing scenes
+skeletal animation
+profiling system
+multithreading
+ray tracer
+vulkan
+....

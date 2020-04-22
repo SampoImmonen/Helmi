@@ -1,0 +1,3 @@
+﻿  App.cpp
+C:\Users\samps\source\repos\Helmi\Helmi\App.cpp(113,25): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+  Helmi.vcxproj -> C:\Users\samps\source\repos\Helmi\x64\Debug\Helmi.exe
