@@ -14,6 +14,23 @@
 #include "Texture2D.h"
 #include "Timer.h"
 
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
+
+
+bool loadmodel() {
+    const char* path = "cornell.obj";
+    Assimp::Importer importer;
+    const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs);
+
+    if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
+    {
+        std::cout << "ERROR::ASSIMP::" << importer.GetErrorString() << std::endl;
+        return true;
+    }
+    return false;
+}
 
 
 Camera cam = Camera();
@@ -37,8 +54,6 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 
 void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
 
-    
- 
     if (firstMouse) {
         lastX = xpos;
         lastY = ypos;
@@ -49,8 +64,6 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
     
     lastX = xpos;
     lastY = ypos;
-
-    
 }
 
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
@@ -94,7 +107,7 @@ int main()
 
     GLFWwindow* window = glfwCreateWindow(800, 600, "Helmi", NULL, NULL);
 
-    
+    if (loadmodel()) { std::cout << "vittu\n"; }
 
     if (window == NULL)
     {
