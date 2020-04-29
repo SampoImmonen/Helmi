@@ -1,4 +1,16 @@
-perusjutut
-imgui
-raytracer
-pathtracer
+Model loading
+Basic lighting
+	 enable model textures specular + diffuse 
+	Light classes for basic light types
+Imgui enabled 
+Advanced opengl from tutorials
+better fps camera	http://www.swiftless.com/tutorials/opengl/camera2.html
+similar camera to ACG 
+
+
+%Raytracing 
+RTTriangle type + scene loader 
+Basic ray tracer + BVH 
+	+ profiling
+
+Skeletal animations 

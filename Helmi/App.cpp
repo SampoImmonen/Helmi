@@ -14,23 +14,7 @@
 #include "Texture2D.h"
 #include "Timer.h"
 
-#include <assimp/Importer.hpp>
-#include <assimp/scene.h>
-#include <assimp/postprocess.h>
-
-
-bool loadmodel() {
-    const char* path = "cornell.obj";
-    Assimp::Importer importer;
-    const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs);
-
-    if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
-    {
-        std::cout << "ERROR::ASSIMP::" << importer.GetErrorString() << std::endl;
-        return true;
-    }
-    return false;
-}
+#include "Model.h"
 
 
 Camera cam = Camera();
@@ -44,6 +28,7 @@ bool firstMouse = true;
 float lastX = 800.0f / 2.0;
 float lastY = 600.0f / 2.0;
 float fov = 45.0f;
+
 
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
@@ -92,6 +77,7 @@ void processInput(GLFWwindow* window)
         std::cout << "TraceRays:... to be done\n";
     }
 
+
 }
 
 // global 
@@ -100,14 +86,13 @@ void processInput(GLFWwindow* window)
 int main()
 {
     glfwInit();
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     //glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
     GLFWwindow* window = glfwCreateWindow(800, 600, "Helmi", NULL, NULL);
 
-    if (loadmodel()) { std::cout << "vittu\n"; }
 
     if (window == NULL)
     {
@@ -135,132 +120,66 @@ int main()
     // tell GLFW to capture our mouse
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR);
     
-    glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-
-    
-    float vertices[] = {
-        -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-         0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
-         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-
-        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-         0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-         0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-         0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-        -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-
-        -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-        -0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-        -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-
-         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-         0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-         0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-         0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-
-        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-         0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
-         0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-         0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-
-        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-        -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
-        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
-    };
-    unsigned int indices[] = {  // note that we start from 0!
-        0, 1, 3,   // first triangle
-        1, 2, 3    // second triangle
-    };
-
-    
-
-    unsigned int VAO;
-    glGenVertexArrays(1, &VAO);
-
-    glBindVertexArray(VAO);
-
-    unsigned int VBO;
-    glGenBuffers(1, &VBO);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
     /*
     unsigned int EBO;
     glGenBuffers(1, &EBO);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
     */
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3*sizeof(float)));
-    glEnableVertexAttribArray(1);
+    glm::mat4 projection;
+    
 
     Shader shader("Shader.vert", "Shader.frag");
-    Texture2D tex("textures/tree.jpg");
-    Texture2D tex2("textures/vangogh.jpg");
-    tex.bind();
-    tex2.bind(1);
+    Model Sphere("models/untitled.obj");
+    Model plane("models/Plane.obj");
+    Model cornell("models/cornell.obj");
     shader.UseProgram();
+    shader.setUniformMat4f("projection", projection);
+ 
 
-
-    glm::vec3 cubePositions[] = {
-  glm::vec3(0.0f,  0.0f,  0.0f),
-  glm::vec3(2.0f,  5.0f, -15.0f),
-  glm::vec3(-1.5f, -2.2f, -2.5f),
-  glm::vec3(-3.8f, -2.0f, -12.3f),
-  glm::vec3(2.4f, -0.4f, -3.5f),
-  glm::vec3(-1.7f,  3.0f, -7.5f),
-  glm::vec3(1.3f, -2.0f, -2.5f),
-  glm::vec3(1.5f,  2.0f, -2.5f),
-  glm::vec3(1.5f,  0.2f, -1.5f),
-  glm::vec3(-1.3f,  1.0f, -1.5f)
-    };
     //Main loop
     glEnable(GL_DEPTH_TEST);
     while (!glfwWindowShouldClose(window))
     {
+        
+        
         processInput(window);
+        
+        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glm::mat4 model = glm::mat4(1.0f);
+        model = glm::rotate(model, glm::radians((float)glfwGetTime()*100.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        model = glm::scale(model, glm::vec3(10.0f));
 
+
+        glm::mat4 model2 = glm::mat4(1.0f);
+        model2 = glm::translate(model2, glm::vec3(0.0f, 15.0f, 0.0f));
+
+        model2 = glm::scale(model2, glm::vec3(5.0f));
+
+        projection = glm::perspective(glm::radians(cam.Zoom), 800.0f / 600.0f, 0.1f, 500.0f);
+        shader.setUniformMat4f("model", model);
+        shader.setUniformMat4f("projection", projection);
+        shader.setUniformMat4f("view", cam.GetViewMatrix());
+        
         float currentFrame = glfwGetTime();
         deltatime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        glBindVertexArray(VAO);
+        Sphere.Draw(shader);
+        shader.setUniformMat4f("model", model2);
+        Sphere.Draw(shader);
         
-        glm::mat4 projection = glm::perspective(glm::radians(cam.Zoom), (float)800 / (float)600, 0.1f, 100.0f);
-        shader.setUniformMat4f("projection", projection);
-        shader.setUniformMat4f("view", cam.GetViewMatrix());
-        shader.setInt("texture1", 0);
-        shader.setInt("texture2", 1);
-        glBindVertexArray(VAO);
-        for (unsigned int i = 0; i < 10; i++)
-        {
-            glm::mat4 model = glm::mat4(1.0f);
-            model = glm::translate(model, cubePositions[i]);
-            float angle = 20.0f * (i+1);
-            model = glm::rotate(model, 0.8f*(float)glfwGetTime()*glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
-            shader.setUniformMat4f("model", model);
+        glm::mat4 model3 = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -10.0f, 0.0f));
+        model3 = glm::scale(model3, glm::vec3(30.0f));
+        shader.setUniformMat4f("model", model3);
+        plane.Draw(shader);
 
-            glDrawArrays(GL_TRIANGLES, 0, 36);
-        }
-        glBindVertexArray(0);
+        glm::mat4 model4 = glm::translate(glm::mat4(1.0f), glm::vec3(60.0f, 0.0f, 0.0f));
+        model4 = glm::scale(model4, glm::vec3(25.0f));
+        shader.setUniformMat4f("model", model4);
+        cornell.Draw(shader);
+
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
