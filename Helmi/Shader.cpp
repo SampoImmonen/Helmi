@@ -20,12 +20,17 @@ void Shader::UseProgram()
 
 void Shader::compileShaders(void)
 {
-	const char* vsource = readfromFile(vertexPath);
-	const char* fsource = readfromFile(fragmentPath);
+	std::string vsource = readfromFile(vertexPath);
+	std::string fsource = readfromFile(fragmentPath);
+
+	const char* vsourcep = vsource.c_str();
+	const char* fsourcep = fsource.c_str();
+
+
 	std::cout << "\n---------------------------------\n";
 	std::cout << "compiling shader:" << vertexPath << "\n";
 	VertexShader = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(VertexShader, 1, &vsource, NULL);
+	glShaderSource(VertexShader, 1, &vsourcep, NULL);
 	glCompileShader(VertexShader);
 
 	int  success;
@@ -39,7 +44,7 @@ void Shader::compileShaders(void)
 	}
 	std::cout << "compiling shader:" << fragmentPath << "\n";
 	FragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(FragmentShader, 1, &fsource, NULL);
+	glShaderSource(FragmentShader, 1, &fsourcep, NULL);
 	glCompileShader(FragmentShader);
 
 	glGetShaderiv(FragmentShader, GL_COMPILE_STATUS, &success);
@@ -64,6 +69,13 @@ void Shader::compileShaders(void)
 	glDeleteShader(FragmentShader);
 }
 
+void Shader::setUniform1f(const char* name, float v0)
+{
+	UseProgram();
+	int loc = glad_glGetUniformLocation(program, name);
+	glUniform1f(loc, v0);
+}
+
 void Shader::setUniform4f(const char* name, float v0, float v1, float v2, float v3)
 {
 	UseProgram();
@@ -83,10 +95,17 @@ void Shader::setUniformMat4f(const char* name, const glm::mat4& mat)
 	glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(mat));
 }
 
-const char *Shader::readfromFile(const std::string& path)
+void Shader::setUniformVec3(const char* name, const glm::vec3& vec)
+{
+	unsigned int loc = glGetUniformLocation(program, name);
+	glUniform3f(loc, vec.x, vec.y, vec.z);
+}
+
+std::string Shader::readfromFile(const std::string& path)
 {
 	std::ifstream ifs(path.c_str());
 	std::string str(std::istreambuf_iterator<char>{ifs}, {});
-	const char* source = str.c_str();
-	return source;
+	
+	//std::cout << source;
+	return str;
 }

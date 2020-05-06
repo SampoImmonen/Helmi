@@ -19,13 +19,18 @@ public:
 	void UseProgram();
 	void compileShaders(void);
 
+
+	void setUniform1f(const char* name, float v0);
 	void setUniform4f(const char* name, float v0, float v1, float v2, float v3);
+	
 	void setInt(const char* name, int value);
 	void setUniformMat4f(const char* name, const glm::mat4& mat);
+	void setUniformVec3(const char* name, const glm::vec3& vec);
+
 
 private:
 
-	const char* readfromFile(const std::string &path);
+	std::string readfromFile(const std::string &path);
 	std::string vertexPath;
 	std::string fragmentPath;
 
