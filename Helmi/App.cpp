@@ -243,7 +243,7 @@ int main()
         
         float rad = glm::radians((float)glfwGetTime() * 100.0f);
         
-        glm::vec3 lightpos(10.0f*sin(-rad), 10.0f, 10.0f*cos(-rad));
+        glm::vec3 lightpos(10.0f*sin(-rad), light.position[1], 10.0f*cos(-rad));
         light.position = lightpos;
         setLightUniforms(shader, light);
         
@@ -288,6 +288,7 @@ int main()
         model4 = glm::scale(model4, glm::vec3(25.0f));
         shader.setUniformMat4f("model", model4);
         cornell.Draw(shader);
+        
 
         
         ImGui_ImplOpenGL3_NewFrame();
@@ -297,9 +298,11 @@ int main()
 
         ImGui::Begin("Demo window");
         if (ImGui::Button("Ray Trace")) {
-            mat1.specular = glm::vec3(1.0f, 0.0f, 0.0f);
+            mat2.diffuse = glm::vec3(1.0f, 0.0f, 0.0f);
         }
         ImGui::Text("RenderTime %fms", fps);
+        ImGui::SliderFloat("Shininess", &mat1.shininess, 0.0f, 512.0f);
+        ImGui::SliderFloat3("Lightpos x", &light.position[0], -20.0f, 20.0f);
         ImGui::End();
 
         ImGui::Render();
