@@ -83,7 +83,9 @@ void Shader::setUniform4f(const char* name, float v0, float v1, float v2, float 
 	glUniform4f(loc, v0, v1, v2, v3);
 }
 
-void Shader::setInt(const char* name, int value)
+
+
+void Shader::setUniformInt(const char* name, int value)
 {
 	int loc = glad_glGetUniformLocation(program, name);
 	glUniform1i(loc, value);

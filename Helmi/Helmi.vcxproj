@@ -248,6 +248,8 @@
     <ClInclude Include="Timer.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="lightShader.frag" />
+    <None Include="lightShader.vert" />
     <None Include="Shader.frag" />
     <None Include="Shader.vert" />
   </ItemGroup>
