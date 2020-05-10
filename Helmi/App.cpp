@@ -1,8 +1,8 @@
 #include <glad/glad.h> 
 #include <GLFW/glfw3.h>
+
 #include <iostream>
 #include <string>
-
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -35,6 +35,8 @@ float lastX = 800.0f / 2.0;
 float lastY = 600.0f / 2.0;
 float fov = 45.0f;
 
+
+
 struct Material {
     glm::vec3 ambient;
     glm::vec3 diffuse;
@@ -42,13 +44,30 @@ struct Material {
 
     float shininess;
 
-    float* asList() {
-        float l[3];
-        l[0] = ambient[0];
-        l[1] = ambient[1];
-        l[2] = ambient[2];
-        return l;
-    }
+	Texture2D diffuseMap;
+	Texture2D specularMap;
+	Texture2D emissiveMap;
+
+	bool hasDiffuse = false;
+	bool hasSpecular = false;
+	bool hasEmissive = false;
+
+	void bindDiffuse() {
+		diffuseMap.bind(0);
+	}
+
+	void bindSpecular() {
+		specularMap.bind(1);
+	}
+
+	void bindEmission() {
+		emissiveMap.bind(2);
+	}
+	void bindTextures() {
+		bindDiffuse();
+		bindSpecular();
+		bindEmission();
+	}
 };
 
 struct Light {
@@ -57,15 +76,28 @@ struct Light {
     glm::vec3 specular;
 
     glm::vec3 position;
+
+	float constant = 1.0f;
+	float linear = 0.001f;
+	float quadratic = 0.0001f;
 };
 
 
-void setMaterialUniforms(Shader *shader, const Material &mat) {
-    shader->setUniformVec3("material.ambient", mat.ambient);
-    shader->setUniformVec3("material.diffuse", mat.diffuse);
-    shader->setUniformVec3("material.specular", mat.specular);
+void setMaterialUniforms(Shader &shader, Material &mat) {
+    shader.setUniformVec3("material.ambient", mat.ambient);
+    shader.setUniformVec3("material.diffuse", mat.diffuse);
+    shader.setUniformVec3("material.specular", mat.specular);
 
-    shader->setUniform1f("material.shininess", mat.shininess);
+	shader.setUniformInt("material.hasDiffuse", mat.hasDiffuse);
+	shader.setUniformInt("material.DiffuseMap", 0);
+
+	shader.setUniformInt("material.hasSpecular", mat.hasSpecular);
+	shader.setUniformInt("material.specularMap", 1);
+	
+	mat.bindTextures();
+	
+
+    shader.setUniform1f("material.shininess", mat.shininess);
 
 }
 
@@ -75,6 +107,11 @@ void setLightUniforms(Shader &shader, const Light& light) {
     shader.setUniformVec3("light.specular", light.specular);
 
     shader.setUniformVec3("light.position", light.position);
+	
+	shader.setUniform1f("light.constant", light.constant);
+	shader.setUniform1f("light.linear", light.linear);
+	shader.setUniform1f("light.quadratic", light.quadratic);
+
 }
 
 
@@ -126,10 +163,8 @@ void processInput(GLFWwindow* window)
         std::cout << "TraceRays:... to be done\n";
     }
 
-
 }
-
-// global 
+ 
 
 
 int main()
@@ -189,23 +224,41 @@ int main()
     
 
     Shader shader("Shader.vert", "Shader.frag");
-    Model Sphere("models/untitled.obj");
-    Model plane("models/Plane.obj");
+    
+	Model Sphere("models/untitled.obj");
+    Model plane("models/pwt.obj");
     Model cornell("models/cornell.obj");
-    shader.UseProgram();
+    
+	shader.UseProgram();
     shader.setUniformMat4f("projection", projection);
     
+	Texture2D tex2("textures/vangogh.jpg");
+	Texture2D tex("textures/tree.jpg");
+	//Texture2D tex3("texture/emission.jpg");
+
     Material mat1;
     mat1.ambient = glm::vec3(0.0f);
     mat1.diffuse = glm::vec3(0.5f, 0.5f, 0.0f);
     mat1.specular = glm::vec3(0.6f, 0.6f, 0.5f);
     mat1.shininess = 0.25f*128;
 
+	mat1.diffuseMap = tex;
+	mat1.hasDiffuse = false;
+
     Material mat2;
     mat2.ambient = glm::vec3(0.0f);
     mat2.diffuse = glm::vec3(0.44f, 0.1f, 0.0f);
     mat2.specular = glm::vec3(1.0f);
-    mat2.shininess = 0.078125f*128;
+    mat2.shininess = 8.0f;
+
+	mat2.diffuseMap = tex;
+	mat2.hasDiffuse = true;
+	
+	mat2.specularMap = tex2;
+	mat2.hasSpecular = true;
+
+	
+
 
     Light light;
     light.ambient = glm::vec3(0.2f);
@@ -220,12 +273,10 @@ int main()
     glEnable(GL_DEPTH_TEST);
     while (!glfwWindowShouldClose(window))
     {
-        
-
 
         processInput(window);
         glfwPollEvents();
-        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         float currentFrame = glfwGetTime();
@@ -243,24 +294,19 @@ int main()
         
         float rad = glm::radians((float)glfwGetTime() * 100.0f);
         
-        glm::vec3 lightpos(10.0f*sin(-rad), 10.0f, 10.0f*cos(-rad));
-        light.position = lightpos;
+        //glm::vec3 lightpos(10.0f*sin(-rad), 10.0f, 10.0f*cos(-rad));
+		
         setLightUniforms(shader, light);
         
         
-        shader.setUniformVec3("lightPos", lightpos);
-
-
-
+        shader.setUniformVec3("lightPos", light.position);
 
         glm::mat4 model = glm::mat4(1.0f);
         model = glm::rotate(model, glm::radians((float)glfwGetTime()*100.0f), glm::vec3(0.0f, 1.0f, 0.0f));
         model = glm::scale(model, glm::vec3(10.0f));
-
         
         glm::mat4 model2 = glm::mat4(1.0f);
         model2 = glm::translate(model2, glm::vec3(0.0f, 15.0f, 0.0f));
-
         model2 = glm::scale(model2, glm::vec3(5.0f));
 
         projection = glm::perspective(glm::radians(cam.Zoom), (float)WIDTH/HEIGHT, 0.1f, 500.0f);
@@ -269,10 +315,7 @@ int main()
         shader.setUniformMat4f("view", cam.GetViewMatrix());
         shader.setUniformVec3("viewPos", cam.Position);
 
-
-
-        
-        setMaterialUniforms(&shader, mat1);
+        setMaterialUniforms(shader, mat1);
         Sphere.Draw(shader);
         shader.setUniformMat4f("model", model2);
         Sphere.Draw(shader);
@@ -281,30 +324,35 @@ int main()
         model3 = glm::scale(model3, glm::vec3(30.0f));
         shader.setUniformMat4f("model", model3);
         
-        setMaterialUniforms(&shader, mat2);
-        plane.Draw(shader);
+        setMaterialUniforms(shader, mat2);
+		plane.Draw(shader);
+
 
         glm::mat4 model4 = glm::translate(glm::mat4(1.0f), glm::vec3(60.0f, 0.0f, 0.0f));
         model4 = glm::scale(model4, glm::vec3(25.0f));
         shader.setUniformMat4f("model", model4);
         cornell.Draw(shader);
 
-        
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
         
 
-        ImGui::Begin("Demo window");
+        ImGui::Begin("Control Panel");
         if (ImGui::Button("Ray Trace")) {
             mat1.specular = glm::vec3(1.0f, 0.0f, 0.0f);
         }
-        ImGui::Text("RenderTime %fms", fps);
-        ImGui::End();
 
+        ImGui::Text("RenderTime %fms", fps);
+		ImGui::SliderFloat3("mat 1 ambient", &mat1.ambient[0], 0.0f, 1.0f);
+		ImGui::SliderFloat3("mat 1 diffuse", &mat1.diffuse[0], 0.0f, 1.0f);
+		ImGui::SliderFloat3("mat 1 specular", &mat1.specular[0], 0.0f, 1.0f);
+		ImGui::SliderFloat3("Light pos", &light.position[0], -20.0f, 20.0f);
+		ImGui::SliderFloat2("Attenuation", &light.linear, 0.0f, 0.2f);
+		ImGui::End();
+        	
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-        
         
         glfwSwapBuffers(window);
         
@@ -313,7 +361,7 @@ int main()
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
-
+	
     glfwTerminate();
     return 0;
 }

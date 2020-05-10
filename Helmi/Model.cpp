@@ -17,9 +17,9 @@ void Model::Draw(Shader shader)
 void Model::loadModel(const char *path)
 {
 
-	#ifdef DEBUG
-		std::cout << "Loading Model: " << path << "\n";
-	#endif
+	
+	std::cout << "Loading Model: " << path << "\n";
+	
 
 	Assimp::Importer import;
 	const aiScene* scene = import.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenNormals);

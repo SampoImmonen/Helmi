@@ -1,16 +1,16 @@
 ﻿  App.cpp
-C:\Users\samps\source\repos\Helmi\Helmi\App.cpp(92,17): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-C:\Users\samps\source\repos\Helmi\Helmi\App.cpp(93,17): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-C:\Users\samps\source\repos\Helmi\Helmi\App.cpp(97,50): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-C:\Users\samps\source\repos\Helmi\Helmi\App.cpp(97,35): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-C:\Users\samps\source\repos\Helmi\Helmi\App.cpp(99,13): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-C:\Users\samps\source\repos\Helmi\Helmi\App.cpp(100,13): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-C:\Users\samps\source\repos\Helmi\Helmi\App.cpp(105,28): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-C:\Users\samps\source\repos\Helmi\Helmi\App.cpp(231,28): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-C:\Users\samps\source\repos\Helmi\Helmi\App.cpp(239,26): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+C:\Users\Sampo\Documents\helmi2\Helmi\Helmi\App.cpp(129,17): warning C4244:  '=': conversion from 'double' to 'float', possible loss of data
+C:\Users\Sampo\Documents\helmi2\Helmi\Helmi\App.cpp(130,17): warning C4244:  '=': conversion from 'double' to 'float', possible loss of data
+C:\Users\Sampo\Documents\helmi2\Helmi\Helmi\App.cpp(134,50): warning C4244:  'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\Sampo\Documents\helmi2\Helmi\Helmi\App.cpp(134,35): warning C4244:  'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\Sampo\Documents\helmi2\Helmi\Helmi\App.cpp(136,13): warning C4244:  '=': conversion from 'double' to 'float', possible loss of data
+C:\Users\Sampo\Documents\helmi2\Helmi\Helmi\App.cpp(137,13): warning C4244:  '=': conversion from 'double' to 'float', possible loss of data
+C:\Users\Sampo\Documents\helmi2\Helmi\Helmi\App.cpp(142,28): warning C4244:  'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\Sampo\Documents\helmi2\Helmi\Helmi\App.cpp(282,28): warning C4244:  'initializing': conversion from 'double' to 'float', possible loss of data
+C:\Users\Sampo\Documents\helmi2\Helmi\Helmi\App.cpp(290,26): warning C4244:  '=': conversion from 'double' to 'float', possible loss of data
   Generating code
-  0 of 1415 functions ( 0.0%) were compiled, the rest were copied from previous compilation.
+  2 of 1718 functions ( 0.1%) were compiled, the rest were copied from previous compilation.
     0 functions were new in current compilation
-    0 functions had inline decision re-evaluated but remain unchanged
+    19 functions had inline decision re-evaluated but remain unchanged
   Finished generating code
-  Helmi.vcxproj -> C:\Users\samps\source\repos\Helmi\x64\Release\Helmi.exe
+  Helmi.vcxproj -> C:\Users\Sampo\Documents\helmi2\Helmi\x64\Release\Helmi.exe
