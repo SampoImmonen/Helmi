@@ -60,6 +60,9 @@
     <ClCompile Include="..\Dependencies\imgui\imgui_widgets.cpp">
       <Filter>imgui</Filter>
     </ClCompile>
+    <ClCompile Include="CubeMap.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Timer.h">
@@ -83,6 +86,9 @@
     <ClInclude Include="Model.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="CubeMap.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Shader.vert">
@@ -95,6 +101,12 @@
       <Filter>shaders</Filter>
     </None>
     <None Include="lightShader.frag">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="SkyboxShader.vert">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="SkyboxShader.frag">
       <Filter>shaders</Filter>
     </None>
   </ItemGroup>

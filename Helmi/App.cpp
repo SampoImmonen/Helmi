@@ -12,8 +12,11 @@
 #include "Shader.h"
 #include "Texture2D.h"
 #include "Timer.h"
+#include "CubeMap.h"
+
 
 #include "Model.h"
+
 
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
@@ -93,7 +96,6 @@ struct DirLight {
         shader.setUniformVec3("dirLight.ambient", ambient);
         shader.setUniformVec3("dirLight.diffuse", diffuse);
         shader.setUniformVec3("dirLight.specular", specular);
-
         shader.setUniformVec3("dirLight.direction", direction);
     }
 };
@@ -209,6 +211,7 @@ void processInput(GLFWwindow* window)
     }
     if (glfwGetKey(window, GLFW_KEY_ENTER) == GLFW_PRESS) {
         std::cout << "TraceRays:... to be done\n";
+        std::cout << "CameraPos: " << cam.Position.x << ' ' <<cam.Position.y << ' ' <<cam.Position.z;
     }
 
 }
@@ -259,9 +262,6 @@ int main()
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init(glsl_version);
 
-
-
-    
     /*
     unsigned int EBO;
     glGenBuffers(1, &EBO);
@@ -275,7 +275,7 @@ int main()
     
 	Model Sphere("models/untitled.obj");
     Model plane("models/pwt.obj");
-    Model cornell("models/cornell.obj");
+    //Model cornell("models/cornell.obj");
     
 	shader.UseProgram();
     shader.setUniformMat4f("projection", projection);
@@ -283,6 +283,9 @@ int main()
 	Texture2D tex2("textures/vangogh.jpg");
 	Texture2D tex("textures/tree.jpg");
 	//Texture2D tex3("texture/emission.jpg");
+    CubeMap cubemap("textures/skybox/");
+    Shader skyboxShader("SkyboxShader.vert", "SkyboxShader.frag");
+
 
     Material mat1;
     mat1.ambient = glm::vec3(0.0f);
@@ -305,9 +308,6 @@ int main()
 	mat2.specularMap = tex2;
 	mat2.hasSpecular = true;
 
-	
-
-
     Light light;
     light.ambient = glm::vec3(0.2f);
     light.diffuse = glm::vec3(0.5f);
@@ -329,6 +329,7 @@ int main()
     int nbFrames = 0;
     float fps = 0.0f;
 
+    
     //Main loop
     glEnable(GL_DEPTH_TEST);
     while (!glfwWindowShouldClose(window))
@@ -351,19 +352,14 @@ int main()
             nbFrames = 0;
         }
 
-        
-        float rad = glm::radians((float)glfwGetTime() * 100.0f);
-        
-        //glm::vec3 lightpos(10.0f*sin(-rad), 10.0f, 10.0f*cos(-rad));
-		
+        cubemap.draw(skyboxShader, projection, cam.GetViewMatrix());
+
         setLightUniforms(shader, light);
         dirLight.setUniforms(shader);
         spotLight.setUniforms(shader);
         
         
-
         glm::mat4 model = glm::mat4(1.0f);
-        model = glm::rotate(model, glm::radians((float)glfwGetTime()*100.0f), glm::vec3(0.0f, 1.0f, 0.0f));
         model = glm::scale(model, glm::vec3(10.0f));
         
         glm::mat4 model2 = glm::mat4(1.0f);
@@ -387,12 +383,6 @@ int main()
         
         setMaterialUniforms(shader, mat2);
 		plane.Draw(shader);
-
-
-        glm::mat4 model4 = glm::translate(glm::mat4(1.0f), glm::vec3(60.0f, 0.0f, 0.0f));
-        model4 = glm::scale(model4, glm::vec3(25.0f));
-        shader.setUniformMat4f("model", model4);
-        cornell.Draw(shader);
 
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
