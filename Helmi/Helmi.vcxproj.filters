@@ -89,6 +89,9 @@
     <ClInclude Include="CubeMap.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Image.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Shader.vert">
@@ -107,6 +110,12 @@
       <Filter>shaders</Filter>
     </None>
     <None Include="SkyboxShader.frag">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="ImageShader.vert">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="ImageShader.frag">
       <Filter>shaders</Filter>
     </None>
   </ItemGroup>

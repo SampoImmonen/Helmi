@@ -1,2 +1,11 @@
-﻿  CubeMap.cpp
-  Helmi.vcxproj -> C:\Users\immon\Documents\Helmi\Helmi\x64\Debug\Helmi.exe
+﻿  App.cpp
+C:\Users\immon\Documents\graphics\Helmi\Helmi\Helmi\App.cpp(179,17): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+C:\Users\immon\Documents\graphics\Helmi\Helmi\Helmi\App.cpp(180,17): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+C:\Users\immon\Documents\graphics\Helmi\Helmi\Helmi\App.cpp(184,50): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\immon\Documents\graphics\Helmi\Helmi\Helmi\App.cpp(184,35): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\immon\Documents\graphics\Helmi\Helmi\Helmi\App.cpp(186,13): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+C:\Users\immon\Documents\graphics\Helmi\Helmi\Helmi\App.cpp(187,13): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+C:\Users\immon\Documents\graphics\Helmi\Helmi\Helmi\App.cpp(192,28): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\immon\Documents\graphics\Helmi\Helmi\Helmi\App.cpp(346,28): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\Users\immon\Documents\graphics\Helmi\Helmi\Helmi\App.cpp(354,26): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+  Helmi.vcxproj -> C:\Users\immon\Documents\graphics\Helmi\Helmi\x64\Debug\Helmi.exe

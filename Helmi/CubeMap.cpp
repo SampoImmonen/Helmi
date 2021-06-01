@@ -51,7 +51,6 @@ CubeMap::CubeMap(const std::string& dir)
 {
 	//assumes that images are named, front, back, right...
 	
-	//TODO setup cube vao
 	glGenBuffers(1, &VBO);
 	glGenVertexArrays(1, &VAO);
 	glBindVertexArray(VAO);

@@ -243,6 +243,7 @@
     <ClInclude Include="..\..\..\..\Downloads\stb_image.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="CubeMap.h" />
+    <ClInclude Include="Image.h" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="Model.h" />
     <ClInclude Include="Shader.h" />
@@ -250,6 +251,8 @@
     <ClInclude Include="Timer.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="ImageShader.frag" />
+    <None Include="ImageShader.vert" />
     <None Include="lightShader.frag" />
     <None Include="lightShader.vert" />
     <None Include="Shader.frag" />

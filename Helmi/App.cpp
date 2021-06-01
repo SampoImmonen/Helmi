@@ -13,7 +13,7 @@
 #include "Texture2D.h"
 #include "Timer.h"
 #include "CubeMap.h"
-
+#include "Image.h"
 
 #include "Model.h"
 
@@ -285,7 +285,7 @@ int main()
 	//Texture2D tex3("texture/emission.jpg");
     CubeMap cubemap("textures/skybox/");
     Shader skyboxShader("SkyboxShader.vert", "SkyboxShader.frag");
-
+    Shader imageShader("ImageShader.vert", "ImageShader.frag");
 
     Material mat1;
     mat1.ambient = glm::vec3(0.0f);
@@ -328,8 +328,11 @@ int main()
     float lastTime = 0.0;
     int nbFrames = 0;
     float fps = 0.0f;
+    Image im(800, 600);
+    im.fill_image(glm::vec3(1.0f, 1.0f, 0));
+    im.createTexture();
 
-    
+    int mode = 1;
     //Main loop
     glEnable(GL_DEPTH_TEST);
     while (!glfwWindowShouldClose(window))
@@ -351,7 +354,7 @@ int main()
             fps = 1000.0 / double(nbFrames);
             nbFrames = 0;
         }
-
+                        
         cubemap.draw(skyboxShader, projection, cam.GetViewMatrix());
 
         setLightUniforms(shader, light);
@@ -380,9 +383,14 @@ int main()
         glm::mat4 model3 = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -10.0f, 0.0f));
         model3 = glm::scale(model3, glm::vec3(30.0f));
         shader.setUniformMat4f("model", model3);
-        
         setMaterialUniforms(shader, mat2);
 		plane.Draw(shader);
+
+        //render image into the screen. used for showing ray tracing results
+        if (mode==2){
+            im.fill_image(glm::vec3(0.0f, sin(2.0f * 3.14 * currentFrame), 1.0f));
+            im.drawImage(imageShader);
+        }
 
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
