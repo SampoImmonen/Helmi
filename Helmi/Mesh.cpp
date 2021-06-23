@@ -7,13 +7,32 @@ Mesh::Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices){
 	setupMesh();
 }
 
+Mesh::Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, glMaterial mat)
+{
+	this->vertices = vertices;
+	this->indices = indices;
+	this->m_material = mat;
+
+	setupMesh();
+}
+
 Mesh::~Mesh()
 {
 }
 
 void Mesh::Draw(Shader shader)
 {
+
 	shader.UseProgram();
+	shader.setUniformVec3("material.ambient", m_material.ambient);
+	shader.setUniformVec3("material.diffuse", m_material.diffuse);
+	shader.setUniformVec3("material.specular", m_material.specular);
+	shader.setUniformInt("material.hasDiffuse", false);
+	shader.setUniformInt("material.DiffuseMap", 0);
+	shader.setUniformInt("material.hasSpecular", false);
+	shader.setUniformInt("material.DiffuseMap", 1);
+	shader.setUniform1f("material.shininess", 32.0f);
+
 	glBindVertexArray(VAO);
 	glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
 	glBindVertexArray(0);

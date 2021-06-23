@@ -1,11 +1,14 @@
-﻿  App.cpp
-C:\Users\immon\Documents\graphics\Helmi\Helmi\Helmi\App.cpp(179,17): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-C:\Users\immon\Documents\graphics\Helmi\Helmi\Helmi\App.cpp(180,17): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-C:\Users\immon\Documents\graphics\Helmi\Helmi\Helmi\App.cpp(184,50): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-C:\Users\immon\Documents\graphics\Helmi\Helmi\Helmi\App.cpp(184,35): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-C:\Users\immon\Documents\graphics\Helmi\Helmi\Helmi\App.cpp(186,13): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-C:\Users\immon\Documents\graphics\Helmi\Helmi\Helmi\App.cpp(187,13): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-C:\Users\immon\Documents\graphics\Helmi\Helmi\Helmi\App.cpp(192,28): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-C:\Users\immon\Documents\graphics\Helmi\Helmi\Helmi\App.cpp(346,28): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-C:\Users\immon\Documents\graphics\Helmi\Helmi\Helmi\App.cpp(354,26): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-  Helmi.vcxproj -> C:\Users\immon\Documents\graphics\Helmi\Helmi\x64\Debug\Helmi.exe
+﻿C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\MSBuild\Microsoft\VC\v160\Microsoft.CppBuild.targets(491,5): warning MSB8028: The intermediate directory (x64\Debug\) contains files shared from another project (Helmi.vcxproj).  This can lead to incorrect clean and rebuild behavior.
+  Application.cpp
+C:\Users\immon\Documents\graphics\Helmi\Helmi\helmirt\RTTriangle.h(96,40): warning C4244: 'initializing': conversion from 'double' to 'const float', possible loss of data
+C:\Users\immon\Documents\graphics\Helmi\Helmi\Helmi\Application.h(65,22): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\Users\immon\Documents\graphics\Helmi\Helmi\Helmi\Application.h(71,17): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+C:\Users\immon\Documents\graphics\Helmi\Helmi\Helmi\Application.cpp(227,42): warning C4312: 'type cast': conversion from 'unsigned int' to 'ImTextureID' of greater size
+C:\Users\immon\Documents\graphics\Helmi\Helmi\Helmi\Application.cpp(247,23): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+C:\Users\immon\Documents\graphics\Helmi\Helmi\Helmi\Application.cpp(248,23): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+C:\Users\immon\Documents\graphics\Helmi\Helmi\Helmi\Application.cpp(252,78): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\immon\Documents\graphics\Helmi\Helmi\Helmi\Application.cpp(252,39): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\immon\Documents\graphics\Helmi\Helmi\Helmi\Application.cpp(253,22): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+C:\Users\immon\Documents\graphics\Helmi\Helmi\Helmi\Application.cpp(254,22): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+C:\Users\immon\Documents\graphics\Helmi\Helmi\Helmi\Application.cpp(262,32): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+  Helmi.vcxproj -> C:\Users\immon\Documents\graphics\Helmi\Helmi\x64\Debug\helmigl.exe

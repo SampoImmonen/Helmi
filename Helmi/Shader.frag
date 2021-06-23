@@ -86,9 +86,6 @@ uniform Light light;
 
 vec3 calcSpotLight(SpotLight light, vec3 normal, vec3 viewPos, vec3 fragPos) {
 
-	
-	
-	
 	vec3 lightDir = normalize(light.position - fragPos);
 	normal = normalize(normal);
 
@@ -98,7 +95,7 @@ vec3 calcSpotLight(SpotLight light, vec3 normal, vec3 viewPos, vec3 fragPos) {
 
 	vec3 viewDir = normalize(viewPos - fragPos);
 
-	float diff = max(dot(normal, lightDir), 0.0);
+	float diff = abs(dot(normal, lightDir));
 
 	vec3 reflectDir = reflect(-lightDir, normal);
 	float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
@@ -139,7 +136,7 @@ vec3 calcDirectionalLight(DirLight light, vec3 normal, vec3 viewPos) {
 
 	vec3 viewDir = normalize(viewPos - fragPos);
 
-	float diff = max(dot(normal, lightDir), 0.0);
+	float diff = abs(dot(normal, lightDir));
 	
 	vec3 reflectDir = reflect(-lightDir, normal);
 	float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
@@ -174,7 +171,7 @@ vec3 calcPointLight(Light light, vec3 normal, vec3 fragPos, vec3 viewPos) {
 
 	vec3 viewDir = normalize(viewPos - fragPos);
 	normal = normalize(normal);
-	float diff = max(dot(normal, lightDir), 0.0);
+	float diff = abs(dot(normal, lightDir));
 
 	vec3 reflectDir = reflect(-lightDir, normal);
 	float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
@@ -214,8 +211,8 @@ void main()
 {
 	vec3 color;
 	// A lot of room to optimize; calculations done separately for each light
-	color += calcPointLight(light, normal, fragPos, viewPos);
+	//color += calcPointLight(light, normal, fragPos, viewPos);
 	color += calcDirectionalLight(dirLight, normal, viewPos);
-	color += calcSpotLight(spotLight, normal, viewPos, fragPos);
+	//color += calcSpotLight(spotLight, normal, viewPos, fragPos);
     FragColor = vec4(color, 1.0f);
 }

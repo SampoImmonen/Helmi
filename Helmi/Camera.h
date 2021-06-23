@@ -17,8 +17,8 @@ enum Camera_Movement {
 // Default camera values
 const float YAW = -90.0f;
 const float PITCH = 0.0f;
-const float SPEED = 100.0f;
-const float SENSITIVITY = 0.2f;
+const float SPEED = 20.0f;
+const float SENSITIVITY = 0.28f;
 const float ZOOM = 100.0f;
 
 
@@ -82,9 +82,6 @@ public:
     // Processes input received from a mouse input system. Expects the offset value in both the x and y direction.
     void ProcessMouseMovement(float xoffset, float yoffset, GLboolean constrainPitch = true)
     {
-
-        
-        
         xoffset *= MouseSensitivity;
         yoffset *= MouseSensitivity;
 

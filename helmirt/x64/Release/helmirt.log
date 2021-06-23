@@ -1,0 +1,4 @@
+﻿  App.cpp
+C:\Users\immon\Documents\graphics\Helmi\Helmi\helmirt\RTTriangle.h(96,40): warning C4244: 'initializing': conversion from 'double' to 'const float', possible loss of data
+C:\Users\immon\Documents\graphics\Helmi\Helmi\helmirt\App.cpp(36,14): warning C4091: '': ignored on left of 'helmirt::ScopedTimer' when no variable is declared
+  helmirt.vcxproj -> C:\Users\immon\Documents\graphics\Helmi\Helmi\x64\Release\helmirt.lib
