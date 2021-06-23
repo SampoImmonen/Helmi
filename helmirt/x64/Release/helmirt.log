@@ -1,4 +1,23 @@
 ﻿  App.cpp
 C:\Users\immon\Documents\graphics\Helmi\Helmi\helmirt\RTTriangle.h(96,40): warning C4244: 'initializing': conversion from 'double' to 'const float', possible loss of data
 C:\Users\immon\Documents\graphics\Helmi\Helmi\helmirt\App.cpp(36,14): warning C4091: '': ignored on left of 'helmirt::ScopedTimer' when no variable is declared
+  RTImage.cpp
+  Renderer.cpp
+C:\Users\immon\Documents\graphics\Helmi\Helmi\helmirt\RTTriangle.h(96,40): warning C4244: 'initializing': conversion from 'double' to 'const float', possible loss of data
+C:\Users\immon\Documents\graphics\Helmi\Helmi\helmirt\Renderer.cpp(176,46): warning C4267: 'initializing': conversion from 'size_t' to 'uint32_t', possible loss of data
+C:\Users\immon\Documents\graphics\Helmi\Helmi\helmirt\Renderer.cpp(208,30): warning C4018: '<': signed/unsigned mismatch
+C:\Users\immon\Documents\graphics\Helmi\Helmi\helmirt\Renderer.cpp(237,32): warning C4018: '<': signed/unsigned mismatch
+C:\Users\immon\Documents\graphics\Helmi\Helmi\helmirt\Renderer.cpp(238,12): warning C4244: 'initializing': conversion from 'T' to 'int', possible loss of data
+          with
+          [
+              T=float
+          ]
+C:\Users\immon\Documents\graphics\Helmi\Helmi\helmirt\Renderer.cpp(273,20): warning C4244: 'initializing': conversion from 'int' to 'float', possible loss of data
+C:\Users\immon\Documents\graphics\Helmi\Helmi\helmirt\Renderer.cpp(276,12): warning C4244: 'initializing': conversion from 'T' to 'int', possible loss of data
+          with
+          [
+              T=float
+          ]
+C:\Users\immon\Documents\graphics\Helmi\Helmi\helmirt\Renderer.cpp(288,20): warning C4244: 'initializing': conversion from '__int64' to 'uint32_t', possible loss of data
+C:\Users\immon\Documents\graphics\Helmi\Helmi\helmirt\Renderer.cpp(434,29): warning C4018: '<': signed/unsigned mismatch
   helmirt.vcxproj -> C:\Users\immon\Documents\graphics\Helmi\Helmi\x64\Release\helmirt.lib

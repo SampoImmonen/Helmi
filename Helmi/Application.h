@@ -80,6 +80,11 @@ struct MouseInfo {
 	float lastX, lastY;
 };
 
+enum ImageMode {
+	Normal = 0,
+	rtImage
+};
+
 class Application
 {
 public:
@@ -134,6 +139,9 @@ private:
 
 	//imgui
 	bool my_tool_active;
+
+	bool show_rt = false;
+	unsigned int getTextureId();
 
 	//static wrapper class to handle glfw callbacks
 	// (https://stackoverflow.com/questions/7676971/pointing-to-a-function-that-is-a-class-member-glfw-setkeycallback)

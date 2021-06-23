@@ -26,13 +26,14 @@ namespace helmirt {
 
 
 		Renderer m_renderer;
+		RTImage m_rtimage;
+
 	private:
 
 		int m_width = 800, m_height = 600;
 		//currenly only support single object in scene
 		glm::vec3 m_scale = glm::vec3(5.0f);
 		Camera m_camera;
-		RTImage m_rtimage;
 	};
 }
 

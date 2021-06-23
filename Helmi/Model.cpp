@@ -23,7 +23,6 @@ std::vector<helmirt::RTTriangle> Model::trianglesToRT()
 	}
 
 	num_triangles = num_triangles / 3;
-
 	std::vector<helmirt::RTTriangle> triangles;
 	triangles.reserve(num_triangles);
 	for (auto& m : meshes) {

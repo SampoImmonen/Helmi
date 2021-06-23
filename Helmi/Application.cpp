@@ -169,6 +169,7 @@ void Application::initHelmirt()
 	model = glm::scale(model, glm::vec3(5.0f));
 	app.m_renderer.transformTriangles(model);
 	app.m_renderer.constructBVH(helmirt::SPATIAL_MEDIAN, 8);
+	app.m_rtimage.createTexture();
 }
 
 void Application::setupCallbacks()
@@ -232,7 +233,8 @@ void Application::render()
 		ImGui::EndMenuBar();
 	}
 	ImVec2 wsize = ImGui::GetWindowSize();
-	ImGui::Image((ImTextureID)m_fbo.m_color, wsize, ImVec2(0, 1), ImVec2(1, 0));
+	unsigned int textureId = getTextureId();
+	ImGui::Image((ImTextureID)textureId, wsize, ImVec2(0, 1), ImVec2(1, 0));
 	ImVec2 cursorPos = ImGui::GetCursorPos();
 	ImGui::End();
 
@@ -242,6 +244,7 @@ void Application::render()
 	ImGui::Text("fps %fms", m_fpsinfo.fps);
 	ImGui::Text("%d", m_height);
 	ImGui::Text("%d", m_width);
+	ImGui::Checkbox("show rtimage", &show_rt);
 	ImGui::End();
 
 	ImGui::Render();
@@ -255,6 +258,12 @@ void Application::update()
 {
 	//update state of scene objects etc...
 	//no dynamic objects yet...
+}
+
+unsigned int Application::getTextureId()
+{
+	if (show_rt) return *app.m_rtimage.getTexture();
+	return m_fbo.m_color;
 }
 
 void Application::mouseCallback(GLFWwindow* window, double xpos, double ypos)
@@ -306,8 +315,12 @@ void Application::processInput(GLFWwindow* window)
 	if (glfwGetKey(window, GLFW_KEY_ENTER) == GLFW_PRESS) {
 		std::cout << "TraceRay\n";
 		app.renderRT();
-		app.saveRTImage("image.ppm");
+		//app.saveRTImage("image.ppm");
+		app.m_rtimage.updateTexture();
+	}
 
+	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
+		//show_rt = !show_rt;
 	}
 	
 	app.updateCamera(m_glcamera.Position, m_glcamera.Position + m_glcamera.Front);
