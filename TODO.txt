@@ -1,16 +1,25 @@
-Model loading
-Basic lighting
-	 enable model textures specular + diffuse 
-	Light classes for basic light types
-Imgui enabled 
-Advanced opengl from tutorials
-better fps camera	http://www.swiftless.com/tutorials/opengl/camera2.html
-similar camera to ACG 
+# Todo
 
 
-%Raytracing 
-RTTriangle type + scene loader 
-Basic ray tracer + BVH 
-	+ profiling
 
-Skeletal animations 
+## application
+1. imgui docking
+2. app gui layout 
+3. editor panel
+
+## opengl
+1. good pcss shadows
+2. spotlight ligthing
+3. spotlight shadows
+
+## raytrace:
+1. path tracer for diffuse material
+
+
+#controllable parameters:
+exposure (fs)
+gamma(fs)
+light properties
+object transforms
+object material
+...

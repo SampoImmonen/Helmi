@@ -56,7 +56,7 @@ Application::Application()
 {
 	
 	initApp();
-	loadScene(MODELS + std::string("shadowstest.obj"));
+	loadScene(MODELS + std::string("sponza.obj"));
 	m_skybox = CubeMap("textures/skybox/");
 	m_fbo = FrameBuffer(m_width, m_height);
 	m_shadowmap = ShadowMapBuffer(1024, 1024);
@@ -194,7 +194,7 @@ void Application::render()
 
 	processInput(m_window);
 	//glEnable(GL_CULL_FACE);
-	//glCullFace(GL_BACK);
+	//glCullFace(GL_FRONT);
 	glm::mat4 model = glm::mat4(1.0f);
 	model = glm::scale(model, glm::vec3(m_scale));
 	//shadow map pass
