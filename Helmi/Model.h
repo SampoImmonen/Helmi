@@ -5,6 +5,9 @@
 
 #include "Mesh.h"
 #include "RTTriangle.h"
+#include "rtTexture2D.h"
+#include "stb_image.h"
+#include "Texture2D.h"
 
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>

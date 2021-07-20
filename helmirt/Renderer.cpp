@@ -17,6 +17,17 @@ namespace helmirt {
 		return index;
 	}
 
+	inline glm::ivec2 getTexelCoords(const glm::vec2& uv, const glm::vec2& size) {
+		float u, v, n;
+		//uv coordinates flipped for opengl in model loading
+		u = std::modf(uv[1], &n);
+		v = std::modf(uv[0], &n);
+
+		u = size[0] * abs(u);
+		v = size[1] * abs(v);
+		return glm::ivec2(u, v);
+	}
+
 	BoundingBox combineBoundingBoxes(const BoundingBox& bb_1, const BoundingBox& bb_2) {
 		//create a bounding box for two bounding boxes
 		glm::vec3 min(std::min(bb_1.min.x, bb_2.min.x), std::min(bb_1.min.y, bb_2.min.y), std::min(bb_1.min.z, bb_2.min.z));
@@ -95,7 +106,7 @@ namespace helmirt {
 			cmat->ambient_tex = mat.ambient_texname;
 			cmat->diffuse_tex = mat.diffuse_texname;
 			cmat->specular_tex = mat.specular_texname;
-			cmat->bump_tex = mat.bump_texname;
+			cmat->normal_tex = mat.bump_texname;
 			custom_materials.push_back(cmat);
 		}
 
@@ -462,9 +473,31 @@ namespace helmirt {
 	glm::vec3 helmirt::Renderer::headlightShading(const RayhitResult& rt)
 	{
 		glm::vec3 n = rt.tri->m_normal;
+		//make methods to get these properties!!!!
+		glm::vec3 diffuse = rt.tri->m_material->diffuse;
+		
+		//get uv coords
+		float u = rt.u;
+		float v = rt.v;
+		glm::vec2 uv = (1 - u - v) * rt.tri->m_txCoordinates[0] + u * rt.tri->m_txCoordinates[1] + v * rt.tri->m_txCoordinates[2];
+		
+		
+		//currently using nearest pixel sampling
+		if (rt.tri->hasTextureType(normalTexture)) {
+			glm::ivec2 txCoords = getTexelCoords(uv, rt.tri->m_material->normal_map->getSize());
+			glm::vec3 sNormal = rt.tri->m_material->normal_map->getPixel(txCoords[0], txCoords[1]);
+			sNormal = glm::normalize(2.0f * sNormal - 1.0f);
+			sNormal = rt.tri->getTBN() * sNormal;
+			n = sNormal;
+		}
+
+		if (rt.tri->hasTextureType(diffuseTexture)) {
+			glm::ivec2 txCoords = getTexelCoords(uv, rt.tri->m_material->diffuse_map->getSize());
+			diffuse = rt.tri->m_material->diffuse_map->getPixel(txCoords[0], txCoords[1]);
+		}
 
 		float d = std::abs(glm::dot(n, glm::normalize(rt.point - rt.ray.orig)));
-		return d * rt.tri->m_material->diffuse;
+		return d * diffuse;
 	}
 
 	glm::vec3 Renderer::normalShading(const RayhitResult& rt)

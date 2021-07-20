@@ -23,16 +23,41 @@ Mesh::~Mesh()
 void Mesh::Draw(Shader shader)
 {
 
+
+	bool hasDiffusemap = !m_material.diffuse_map_name.empty();
+	bool hasSpecularmap = !m_material.specular_map_name.empty();
+	bool hasNormalmap = !m_material.normal_map_name.empty();
+
 	shader.UseProgram();
-	shader.setUniformVec3("material.ambient", m_material.ambient);
+	shader.setUniformVec3("material.ambient", m_material.diffuse);
 	shader.setUniformVec3("material.diffuse", m_material.diffuse);
 	shader.setUniformVec3("material.specular", m_material.specular);
-	shader.setUniformInt("material.hasDiffuse", false);
-	shader.setUniformInt("material.DiffuseMap", 0);
-	shader.setUniformInt("material.hasSpecular", false);
-	shader.setUniformInt("material.DiffuseMap", 1);
+	shader.setUniformInt("material.hasDiffuse", hasDiffusemap);
+	shader.setUniformInt("material.diffuseMap", 0);
+	shader.setUniformInt("material.hasSpecular", hasSpecularmap);
+	shader.setUniformInt("material.specularMap", 1);
+	shader.setUniformInt("material.hasNormal", hasNormalmap);
+	shader.setUniformInt("material.normalMap", 2);
 	shader.setUniform1f("material.shininess", 32.0f);
 
+	if (hasDiffusemap) {
+		m_material.m_diffuse_map->bind(0);
+	}
+	if (hasSpecularmap) {
+		m_material.m_specular_map->bind(1);
+	}
+	if (hasNormalmap) {
+		m_material.m_normal_map->bind(2);
+	}
+
+	glBindVertexArray(VAO);
+	glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
+	glBindVertexArray(0);
+}
+
+void Mesh::SimpleDraw(Shader shader)
+{
+	shader.UseProgram();
 	glBindVertexArray(VAO);
 	glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
 	glBindVertexArray(0);
@@ -60,6 +85,10 @@ void Mesh::setupMesh()
 
 	glEnableVertexAttribArray(2);
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, TexCoords));
+
+	glEnableVertexAttribArray(3);
+	glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Tangent));
+
 
 	glBindVertexArray(0);
 

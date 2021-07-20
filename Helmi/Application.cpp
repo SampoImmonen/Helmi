@@ -56,9 +56,10 @@ Application::Application()
 {
 	
 	initApp();
-	loadScene(MODELS + std::string("sponza.obj"));
+	loadScene(MODELS + std::string("shadowstest.obj"));
 	m_skybox = CubeMap("textures/skybox/");
 	m_fbo = FrameBuffer(m_width, m_height);
+	m_shadowmap = ShadowMapBuffer(1024, 1024);
 
 	glGenVertexArrays(1, &qVAO);
 	glGenBuffers(1, &qVBO);
@@ -85,7 +86,7 @@ bool Application::loadScene(const std::string& filepath)
 	//at the moment hardcoded
 	m_models.push_back(Model(filepath.c_str()));
 	//DirectionalLight dir(glm::vec3(-1.0f, -1.0f, 1.0f));
-	std::unique_ptr<Light> ptr = std::make_unique<DirectionalLight>(DirectionalLight(glm::vec3(0.0f, -1.0f, -1.0f)));
+	std::unique_ptr<Light> ptr = std::make_unique<DirectionalLight>(DirectionalLight(glm::vec3(-2.0f, 4.0f, -1.0f)));
 	m_lights.push_back(std::move(ptr));
 	Shader shader("Shader.vert", "Shader.frag");
 	m_shaders.push_back(shader);
@@ -93,6 +94,10 @@ bool Application::loadScene(const std::string& filepath)
 	m_shaders.push_back(skybox);
 	Shader imageShader("ImageShader.vert", "ImageShader.frag");
 	m_shaders.push_back(imageShader);
+	Shader shadowShader("ShadowDepthShader.vert", "ShadowDepthShader.frag");
+	m_shaders.push_back(shadowShader);
+	Shader showShadowShader("ShowShadowMap.vert", "ShowShadowMap.frag");
+	m_shaders.push_back(showShadowShader);
 	//load scene into rtformat
 	initHelmirt();
 	return true;
@@ -119,8 +124,6 @@ void Application::initApp()
 	initImGui();
 
 }
-
-
 
 void Application::initGLFW()
 {
@@ -150,9 +153,13 @@ void Application::initGLFW()
 
 void Application::initImGui()
 {
-	IMGUI_CHECKVERSION();
+	//IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	imgui_io = ImGui::GetIO(); (void)imgui_io;
+	//imgui_io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+	//imgui_io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+
+	ImGui::StyleColorsDark();
 	ImGui_ImplGlfw_InitForOpenGL(m_window, true);
 	ImGui_ImplOpenGL3_Init(m_systeminfo.glsl_version);
 
@@ -166,7 +173,7 @@ void Application::initHelmirt()
 	
 	//transform harcoded at the moment
 	glm::mat4 model = glm::mat4(1.0f);
-	model = glm::scale(model, glm::vec3(5.0f));
+	model = glm::scale(model, glm::vec3(m_scale));
 	app.m_renderer.transformTriangles(model);
 	app.m_renderer.constructBVH(helmirt::SPATIAL_MEDIAN, 8);
 	app.m_rtimage.createTexture();
@@ -183,32 +190,67 @@ void Application::setupCallbacks()
 void Application::render()
 {	
 
-	//draw scene
 
-	//draw skybox
+
 	processInput(m_window);
+	//glEnable(GL_CULL_FACE);
+	//glCullFace(GL_BACK);
+	glm::mat4 model = glm::mat4(1.0f);
+	model = glm::scale(model, glm::vec3(m_scale));
+	//shadow map pass
+	glEnable(GL_DEPTH_TEST);
+	m_shaders[3].UseProgram();
+	glm::mat4 lightMatrix = m_lights[0]->getLightSpaceMatrix(m_scale);
+	m_shaders[3].setUniformMat4f("lightSpaceMatrix", lightMatrix);
+	m_shaders[3].setUniformMat4f("model", model);
+	m_shadowmap.bind();
+	//m_models[0].Draw(m_shaders[0]);
+	for (auto m : m_models[0].meshes) {
+		m.SimpleDraw(m_shaders[3]);
+	}
+	m_shadowmap.unbind();
+	//glCullFace(GL_BACK);
+	
+	//draw scene
 	m_fbo.bind();
 	glEnable(GL_DEPTH_TEST);
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glm::mat4 projection = glm::perspective(glm::radians(m_glcamera.Zoom), (float)m_width / m_height, 0.1f, 5000.0f);
-	glm::mat4 view = m_glcamera.GetViewMatrix();
-	m_skybox.draw(m_shaders[1], projection, view);
+
+	//draw skybox
 	
-	m_shaders[0].UseProgram();
+	if (!m_show_shadowmap) {
+		glm::mat4 projection = glm::perspective(glm::radians(m_glcamera.Zoom), (float)m_width / m_height, 0.1f, 5000.0f);
+		glm::mat4 view = m_glcamera.GetViewMatrix();
+		m_skybox.draw(m_shaders[1], projection, view);
+	
+
+	
 	//draw models
-	m_lights[0]->setUniforms(m_shaders[0]);
-	glm::mat4 model = glm::mat4(1.0f);
-	model = glm::scale(model, glm::vec3(5.0f));
-	m_shaders[0].setUniformMat4f("model", model);
-	m_shaders[0].setUniformMat4f("projection", projection);
-	m_shaders[0].setUniformMat4f("view", view);
-	m_shaders[0].setUniformVec3("viewPos", m_glcamera.Position);
-	m_models[0].Draw(m_shaders[0]);
+		m_shaders[0].UseProgram();
+		m_lights[0]->setUniforms(m_shaders[0]);
+
+		m_shaders[0].setUniformMat4f("lightSpaceMatrix", lightMatrix);
+		m_shaders[0].setUniformMat4f("model", model);
+		m_shaders[0].setUniformMat4f("projection", projection);
+		m_shaders[0].setUniformMat4f("view", view);
+		m_shaders[0].setUniformVec3("viewPos", m_glcamera.Position);
+		m_shaders[0].setUniformInt("shadowMap", 3);
+		m_shadowmap.bindDepthTexture(3);
+		m_models[0].Draw(m_shaders[0]);
+	}
+	if (m_show_shadowmap) {
+		m_shaders[4].UseProgram();
+		glBindVertexArray(qVAO);
+		glDisable(GL_DEPTH_TEST);
+		m_shadowmap.bindDepthTexture(0);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+	}
 	m_fbo.unbind();
 	//glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
+
 	//m_shaders[2].UseProgram();
 	//GL_CHECK(glBindVertexArray(qVAO));
 	//glDisable(GL_DEPTH_TEST);
@@ -219,6 +261,9 @@ void Application::render()
 	ImGui_ImplOpenGL3_NewFrame();
 	ImGui_ImplGlfw_NewFrame();
 	ImGui::NewFrame();
+
+	bool show_demo_window = true;
+	ImGui::ShowDemoWindow(&show_demo_window);
 
 	ImGui::SetNextWindowPos(ImVec2(0, 0));
 	ImGui::SetNextWindowSize(ImVec2(m_width, m_height));
@@ -245,6 +290,10 @@ void Application::render()
 	ImGui::Text("%d", m_height);
 	ImGui::Text("%d", m_width);
 	ImGui::Checkbox("show rtimage", &show_rt);
+	ImGui::Checkbox("show shadowmap", &m_show_shadowmap);
+	ImGui::Text("%s", "Lights");
+	ImGui::SliderFloat3("dir light", m_lights[0]->get_direction(), -5.0f, 5.0f);
+	ImGui::SliderFloat("scale", &m_scale, 1.0f, 20.0f);
 	ImGui::End();
 
 	ImGui::Render();
@@ -258,6 +307,12 @@ void Application::update()
 {
 	//update state of scene objects etc...
 	//no dynamic objects yet...
+}
+
+void Application::reloadShaders()
+{
+	Shader bl("Shader.vert", "Shader.frag");
+	m_shaders[0] = bl;
 }
 
 unsigned int Application::getTextureId()
@@ -323,6 +378,11 @@ void Application::processInput(GLFWwindow* window)
 		//show_rt = !show_rt;
 	}
 	
+
+	if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS) {
+		reloadShaders();
+	}
+
 	app.updateCamera(m_glcamera.Position, m_glcamera.Position + m_glcamera.Front);
 }
 

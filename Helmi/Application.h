@@ -25,7 +25,7 @@ struct ScreenVAO {
 	unsigned int VAO, VBO, EBO;
 	ScreenVAO() {
 
-		float quadVertices[] = {
+		const float quadVertices[] = {
 			// positions   // texCoords
 			-1.0f,  1.0f,  0.0f, 1.0f,
 			-1.0f, -1.0f,  0.0f, 0.0f,
@@ -113,6 +113,9 @@ private:
 	void render();
 	void update();
 
+	//utils
+	void reloadShaders();
+
 
 	int m_width = 800, m_height = 600;
 	Camera m_glcamera;
@@ -122,7 +125,7 @@ private:
 	//helmirt
 	helmirt::App app;
 
-	//information
+	//system information
 	FpsInfo m_fpsinfo;
 	SystemInfo m_systeminfo;
 	MouseInfo m_mouseinfo;
@@ -133,6 +136,9 @@ private:
 	std::vector<Model> m_models;
 	CubeMap m_skybox;
 	FrameBuffer m_fbo;
+	//who has responsibility for shadowmaps (ligths???)
+	ShadowMapBuffer m_shadowmap;
+	float m_scale = 1.0f;
 
 	//temporary solution
 	unsigned int qVAO, qVBO;
@@ -141,6 +147,7 @@ private:
 	bool my_tool_active;
 
 	bool show_rt = false;
+	bool m_show_shadowmap = false;
 	unsigned int getTextureId();
 
 	//static wrapper class to handle glfw callbacks

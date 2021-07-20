@@ -7,6 +7,7 @@
 
 #include <glm/glm.hpp>
 #include "Ray.h"
+#include "rtTexture2D.h"
 
 /*
 * Class RTTriangle used during ray tracing
@@ -52,7 +53,11 @@ namespace helmirt {
 		std::string ambient_tex;
 		std::string diffuse_tex;
 		std::string specular_tex;
-		std::string bump_tex;
+		std::string normal_tex;
+
+		//textures
+		std::shared_ptr<rtTexture2D> diffuse_map = nullptr;
+		std::shared_ptr<rtTexture2D> normal_map = nullptr;
 
 		CMaterial() {
 			ambient = glm::vec3(0.0f);
@@ -64,6 +69,12 @@ namespace helmirt {
 		~CMaterial() {}
 	};
 
+	enum TextureType {
+		diffuseTexture,
+		specularTexture,
+		normalTexture,
+	};
+
 
 	class RTTriangle
 	{
@@ -73,6 +84,8 @@ namespace helmirt {
 		RTTriangle(std::array<glm::vec3, 3> vertices, std::array<glm::vec2, 3> txCoordinates);
 
 		void calculateNormal();
+		void calculateTangents();
+		glm::mat3 getTBN() const;
 		void applyTransform(const glm::mat4& mat);
 
 		//geometric functions for Shape base class
@@ -82,12 +95,16 @@ namespace helmirt {
 		inline float area() const;
 		inline glm::vec3 centroid() const;
 		BoundingBox boundingbox() const;
+		bool hasTextureType(TextureType type) const;
 
 
 		std::array<glm::vec3, 3> m_vertices;
 		std::array<glm::vec2, 3> m_txCoordinates;
 
 		glm::vec3 m_normal;
+		glm::vec3 m_tangent;
+		glm::vec3 m_bitangent;
+
 		std::shared_ptr<helmirt::CMaterial> m_material = nullptr;
 	private:
 		//vertex struct to combine this info????

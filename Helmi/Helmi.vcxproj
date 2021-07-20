@@ -263,6 +263,10 @@
     <None Include="lightShader.vert" />
     <None Include="Shader.frag" />
     <None Include="Shader.vert" />
+    <None Include="ShadowDepthShader.frag" />
+    <None Include="ShadowDepthShader.vert" />
+    <None Include="ShowShadowMap.frag" />
+    <None Include="ShowShadowMap.vert" />
     <None Include="SkyboxShader.frag" />
     <None Include="SkyboxShader.vert" />
   </ItemGroup>

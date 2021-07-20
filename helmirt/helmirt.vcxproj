@@ -150,6 +150,7 @@
     <ClInclude Include="RayhitResult.h" />
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="RTImage.h" />
+    <ClInclude Include="rtTexture2D.h" />
     <ClInclude Include="RTTriangle.h" />
     <ClInclude Include="ScopedTimer.h" />
     <ClInclude Include="tiny_obj_loader.h" />
@@ -159,6 +160,7 @@
     <ClCompile Include="App.cpp" />
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="RTImage.cpp" />
+    <ClCompile Include="rtTexture2D.cpp" />
     <ClCompile Include="RTTriangle.cpp" />
     <ClCompile Include="ScopedTimer.cpp" />
   </ItemGroup>

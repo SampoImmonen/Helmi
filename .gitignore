@@ -1,7 +1,14 @@
 #files
 *.vs
 
+
 # Directories
+x64/
+Debug/
 /Debug
 /x64
 /books
+/Helmi/x64/
+/Helmi/Debug/
+/Helmirt/64x/
+/Helmirt/Debug/

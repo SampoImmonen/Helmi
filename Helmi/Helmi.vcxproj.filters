@@ -139,5 +139,17 @@
     <None Include="ImageShader.frag">
       <Filter>shaders</Filter>
     </None>
+    <None Include="ShadowDepthShader.vert">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="ShadowDepthShader.frag">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="ShowShadowMap.vert">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="ShowShadowMap.frag">
+      <Filter>shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

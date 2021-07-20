@@ -17,12 +17,33 @@ namespace helmirt{
 		m_normal = glm::normalize(glm::cross(m_vertices[1] - m_vertices[0], m_vertices[2] - m_vertices[0]));
 	}
 
+	void RTTriangle::calculateTangents()
+	{
+		glm::vec3 deltapos1 = m_vertices[1] - m_vertices[0];
+		glm::vec3 deltapos2 = m_vertices[2] - m_vertices[0];
+
+		glm::vec2 deltauv1 = m_txCoordinates[1] - m_txCoordinates[0];
+		glm::vec2 deltauv2 = m_txCoordinates[2] - m_txCoordinates[0];
+
+		float r = 1.0f / (deltauv1.x * deltauv2.y - deltauv1.y * deltauv2.x);
+		m_tangent = (deltapos1 * deltauv2.y - deltapos2 * deltauv1.y) * r;
+		m_bitangent = (deltapos2 * deltauv1.x - deltapos1 * deltauv2.x) * r;
+		m_tangent = glm::normalize(m_tangent);
+		m_bitangent = glm::normalize(m_bitangent);
+	}
+
+	glm::mat3 RTTriangle::getTBN() const 
+	{
+		return glm::mat3(m_tangent, m_bitangent, m_normal);
+	}
+
 	void helmirt::RTTriangle::applyTransform(const glm::mat4& mat)
 	{
 		for (auto& v : m_vertices) {
 			v = glm::vec3(mat * glm::vec4(v, 1.0f));
 		}
 		calculateNormal();
+		calculateTangents();
 	}
 
 	bool helmirt::RTTriangle::intersect(const Ray& ray, float& t, float& u, float& v) const
@@ -82,6 +103,16 @@ namespace helmirt{
 	BoundingBox helmirt::RTTriangle::boundingbox() const
 	{
 		return BoundingBox(min(), max());
+	}
+
+	bool RTTriangle::hasTextureType(TextureType type) const
+	{
+		switch (type) {
+		case diffuseTexture:
+			return m_material->diffuse_map != nullptr;
+		case normalTexture:
+			return m_material->normal_map != nullptr;
+		}
 	}
 
 }

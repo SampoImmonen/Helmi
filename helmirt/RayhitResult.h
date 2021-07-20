@@ -20,5 +20,6 @@ namespace helmirt {
 		RayhitResult() :tri(nullptr), t(), u(), v(), point(), ray() {}
 
 		inline operator bool() { return tri != nullptr; }
+
 	};
 }

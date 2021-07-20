@@ -32,7 +32,32 @@ std::vector<helmirt::RTTriangle> Model::trianglesToRT()
 		mat->specular = m.m_material.specular;
 		mat->diffuse_tex = m.m_material.diffuse_map_name;
 		mat->specular_tex = m.m_material.specular_map_name;
-		mat->bump_tex = m.m_material.normal_map_name;
+		mat->normal_tex = m.m_material.normal_map_name;
+
+		//create rtTextures
+		if (!m.m_material.diffuse_map_name.empty()) {
+			std::cout <<"creating diffuse rtTexture: " << std::string(MODELS + m.m_material.diffuse_map_name)<<"\n";
+			int width, height, nChannels;
+			stbi_set_flip_vertically_on_load(false);
+			unsigned char* data = stbi_load(std::string(MODELS + m.m_material.diffuse_map_name).c_str(), &width, &height, &nChannels, 0);
+			if (data!=nullptr){
+				std::shared_ptr<rtTexture2D> tex = std::make_shared<rtTexture2D>(rtTexture2D(data, width, height, nChannels));
+				mat->diffuse_map = tex;
+			}
+		}
+
+		//normal maps
+		if (!m.m_material.normal_map_name.empty()) {
+			std::cout << "creating Normal rtTexture: " << std::string(MODELS + m.m_material.normal_map_name) << "\n";
+			int width, height, nChannels;
+			stbi_set_flip_vertically_on_load(false);
+			unsigned char* data = stbi_load(std::string(MODELS + m.m_material.normal_map_name).c_str(), &width, &height, &nChannels, 0);
+			if (data != nullptr) {
+				std::shared_ptr<rtTexture2D> tex = std::make_shared<rtTexture2D>(rtTexture2D(data, width, height, nChannels));
+				mat->normal_map = tex;
+			}
+		}
+
 		for (int i = 0; i*3 < m.indices.size(); ++i) {
 			std::array<glm::vec3, 3> vertices;
 			std::array<glm::vec2, 3> texCoordinates;
@@ -61,13 +86,12 @@ void Model::loadModel(const char *path)
 	
 
 	Assimp::Importer import;
-	const aiScene* scene = import.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenNormals);
-
+	const aiScene* scene = import.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenNormals | aiProcess_CalcTangentSpace | aiProcess_OptimizeMeshes | aiProcess_PreTransformVertices);
+	AI_CONFIG_PP_PTV_NORMALIZE;
 	if (!scene | scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
 		std::cout << "ERROR LOADING MODEL: " << path << "\n";
 		std::cout << "ASSIMP::ERROR " << import.GetErrorString() << "\n";
 	}
-
 	processNode(scene->mRootNode, scene);
 }
 
@@ -100,6 +124,11 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
 		vector.y = mesh->mNormals[i].y;
 		vector.z = mesh->mNormals[i].z;
 		vertex.Normal = vector;
+
+		vector.x = mesh->mTangents[i].x;
+		vector.y = mesh->mTangents[i].y;
+		vector.z = mesh->mTangents[i].z;
+		vertex.Tangent = vector;
 
 		if (mesh->mTextureCoords[0]) // does the mesh contain texture coordinates?
 		{
@@ -134,11 +163,35 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
 		material->Get(AI_MATKEY_COLOR_AMBIENT, color);
 		mat.ambient = color3DtoVec3(color);
 
+
+		//make a method to load textures?????
+
+		//fetch diffuse texture
+		textureName = "";
 		material->Get(AI_MATKEY_TEXTURE(aiTextureType_DIFFUSE, 0), textureName);
 		mat.diffuse_map_name = textureName.C_Str();
+		if (!mat.diffuse_map_name.empty()) {
+			mat.m_diffuse_map = std::make_shared<Texture2D>(Texture2D(MODELS + mat.diffuse_map_name));
+		}
 
+		//fetch specular texture
+		//textureName.Clear();
+		textureName = "";
 		material->Get(AI_MATKEY_TEXTURE(aiTextureType_SPECULAR, 0), textureName);
 		mat.specular_map_name = textureName.C_Str();
+		if (!mat.specular_map_name.empty()) {
+			mat.m_specular_map = std::make_shared<Texture2D>(Texture2D(MODELS + mat.specular_map_name));
+		}
+
+		//fetch normal texture
+		//textureName.Clear();
+		textureName = "";
+		material->Get(AI_MATKEY_TEXTURE(aiTextureType_NORMALS, 0), textureName);
+		mat.normal_map_name = textureName.C_Str();
+		if (!mat.normal_map_name.empty()) {
+			mat.m_normal_map = std::make_shared<Texture2D>(Texture2D(MODELS + mat.normal_map_name));
+		}
+
 	}
 
 	return Mesh(vertices, indices, mat);

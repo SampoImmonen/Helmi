@@ -8,7 +8,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include "Shader.h"
-
+#include "Texture2D.h"
 
 
 
@@ -16,6 +16,7 @@ struct Vertex {
 	glm::vec3 Position;
 	glm::vec3 Normal;
 	glm::vec2 TexCoords;
+	glm::vec3 Tangent;
 };
 
 
@@ -27,6 +28,10 @@ struct glMaterial {
 	std::string diffuse_map_name;
 	std::string specular_map_name;
 	std::string normal_map_name;
+
+	std::shared_ptr<Texture2D> m_diffuse_map;
+	std::shared_ptr<Texture2D> m_specular_map;
+	std::shared_ptr<Texture2D> m_normal_map;
 
 };
 
@@ -42,6 +47,7 @@ public:
 	~Mesh();
 	
 	void Draw(Shader shader);
+	void SimpleDraw(Shader shader);
 
 	glMaterial m_material;
 private:
