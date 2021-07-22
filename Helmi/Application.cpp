@@ -196,22 +196,36 @@ void Application::render()
 
 
 	processInput(m_window);
+	//shadow map pass
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_FRONT);
 	glm::mat4 model = glm::mat4(1.0f);
 	model = glm::scale(model, glm::vec3(m_scale));
-	//shadow map pass
 	glEnable(GL_DEPTH_TEST);
-	m_shaders[3].UseProgram();
-	glm::mat4 lightMatrix = m_lights[1]->getLightSpaceMatrix(m_scale);
-	m_shaders[3].setUniformMat4f("lightSpaceMatrix", lightMatrix);
-	m_shaders[3].setUniformMat4f("model", model);
-	m_shadowmap.bind();
-	//m_models[0].Draw(m_shaders[0]);
-	for (auto m : m_models[0].meshes) {
-		m.SimpleDraw(m_shaders[3]);
+	//m_shaders[3].UseProgram();
+	//m_shaders[3].setUniformMat4f("model", model);
+	//glm::mat4 lightMatrix = m_lights[0]->getLightSpaceMatrix(m_scale);
+	//m_shaders[3].setUniformMat4f("lightSpaceMatrix", lightMatrix);
+	//m_shadowmap.bind();
+	//for (auto m : m_models[0].meshes) {
+	//	m.SimpleDraw(m_shaders[3]);
+	//}
+	//m_shadowmap.unbind();
+
+	for (int i=0; i < m_lights.size(); ++i){
+		if (!m_lights[i]->castsShadows) continue;
+		m_shaders[3].UseProgram();
+		m_shaders[3].setUniformMat4f("model", model);
+		m_lights[i]->prepareShadowMap(m_shaders[3]);
+		for (auto m : m_models[0].meshes) {
+			m.SimpleDraw(m_shaders[3]);
+		}
+		//glm::mat4 lightMatrix = m_lights[i]->getLightSpaceMatrix(m_scale);
+		//m_shaders[3].setUniformMat4f("lightSpaceMatrix", lightMatrix);
+		//m_shadowmap.bind();
+		//m_models[0].Draw(m_shaders[0]);
+		//m_shadowmap.unbind();
 	}
-	m_shadowmap.unbind();
 	//glDisable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
 	
@@ -228,27 +242,30 @@ void Application::render()
 		glm::mat4 view = m_glcamera.GetViewMatrix();
 		m_skybox.draw(m_shaders[1], projection, view);
 	
-
 	
 	//draw models
 		m_shaders[0].UseProgram();
 		m_lights[0]->setUniforms(m_shaders[0]);
 		m_lights[1]->setUniforms(m_shaders[0]);
 		m_shaders[0].setUniform1f("exposure", exposure);
-		m_shaders[0].setUniformMat4f("lightSpaceMatrix", lightMatrix);
+		m_shaders[0].setUniformMat4f("lightSpaceMatrixDirLight", m_lights[0]->getLightSpaceMatrix());
+		m_shaders[0].setUniformMat4f("lightSpaceMatrixSpotLight", m_lights[1]->getLightSpaceMatrix());
+		//m_shadowmap.bindDepthTexture(3);
+		//m_shaders[0].setUniformMat4f("lightSpaceMatrixSpotLight", m_lights[1]->getLightSpaceMatrix());
 		m_shaders[0].setUniformMat4f("model", model);
 		m_shaders[0].setUniformMat4f("projection", projection);
 		m_shaders[0].setUniformMat4f("view", view);
 		m_shaders[0].setUniformVec3("viewPos", m_glcamera.Position);
-		m_shaders[0].setUniformInt("shadowMap", 3);
-		m_shadowmap.bindDepthTexture(3);
+		//m_shaders[0].setUniformInt("shadowMap", 3);
+		//m_shadowmap.bindDepthTexture(3);
 		m_models[0].Draw(m_shaders[0]);
 	}
 	if (m_show_shadowmap) {
 		m_shaders[4].UseProgram();
 		glBindVertexArray(qVAO);
 		glDisable(GL_DEPTH_TEST);
-		m_shadowmap.bindDepthTexture(0);
+		m_shaders[4].setUniformInt("screenTexture", 0);
+		m_lights[0]->bindShadowMapTexture(0);
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 	}
 	m_fbo.unbind();

@@ -9,14 +9,16 @@ layout(location = 3) in vec3 aTangent;
 uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
-uniform mat4 lightSpaceMatrix;
+uniform mat4 lightSpaceMatrixDirLight;
+uniform mat4 lightSpaceMatrixSpotLight;
 
 
 out vec3 normal;
 out vec3 fragPos;
 out vec2 texCoords;
 out mat3 TBN;
-out vec4 fragPosLightSpace;
+out vec4 fragPosLightSpaceDirLight;
+out vec4 fragPosLightSpaceSpotLight;
 
 void main()
 {
@@ -30,7 +32,8 @@ void main()
 
     fragPos = vec3(model * vec4(aPos, 1.0));
     gl_Position = projection*view*vec4(fragPos, 1.0);
-    fragPosLightSpace = lightSpaceMatrix * vec4(fragPos, 1.0);
+    fragPosLightSpaceDirLight = lightSpaceMatrixDirLight * vec4(fragPos, 1.0);
+    fragPosLightSpaceSpotLight = lightSpaceMatrixSpotLight * vec4(fragPos, 1.0);
     normal = mat3(transpose(inverse(model))) * aNormal;
 	texCoords = atexCoords;
 }

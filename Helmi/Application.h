@@ -139,7 +139,7 @@ private:
 	float exposure = 1.0f;
 
 	//who has responsibility for shadowmaps (ligths???)
-	ShadowMapBuffer m_shadowmap;
+	ShadowMapBuffer m_shadowmap, m_shadowmap2;
 	float m_scale = 1.0f;
 
 	//temporary solution

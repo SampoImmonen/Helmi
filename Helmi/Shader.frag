@@ -7,7 +7,8 @@ in vec3 normal;
 in vec3 fragPos;
 in vec2 texCoords;
 in mat3 TBN;
-in vec4 fragPosLightSpace;
+in vec4 fragPosLightSpaceDirLight;
+in vec4 fragPosLightSpaceSpotLight;
 
 uniform vec3 viewPos;
 
@@ -100,7 +101,7 @@ struct Material {
 };
 
 
-uniform sampler2D shadowMap;
+//uniform sampler2D shadowMap;
 
 struct Light {
     vec3 position;
@@ -124,6 +125,10 @@ struct PointLight {
 	float constant;
 	float linear;
 	float quadratic;
+
+	float size;
+	bool castShadows;
+	sampler2D shadowMap;
 };
 
 
@@ -135,6 +140,8 @@ struct DirLight {
 	vec3 specular;
 
 	float size;
+	bool castShadows;
+	sampler2D shadowMap;
 };
 
 struct SpotLight {
@@ -151,6 +158,10 @@ struct SpotLight {
 	float constant;
 	float linear;
 	float quadratic;
+
+	float size;
+	bool castShadows;
+	sampler2D shadowMap;
 };
 
 uniform SpotLight spotLight;
@@ -161,7 +172,7 @@ uniform Material material;
 uniform Light light;
 uniform float exposure;
 
-float ShadowCalculationPoisson(vec4 fragPosLightSpace, float bias) {
+float ShadowCalculationPoisson(vec4 fragPosLightSpace, float bias, sampler2D shadowMap) {
 	vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
 	projCoords = projCoords * 0.5 + 0.5;
 	float visibility = 1.0;
@@ -176,7 +187,7 @@ float ShadowCalculationPoisson(vec4 fragPosLightSpace, float bias) {
 	return 1.0-visibility;
 }
 
-vec2 blockerSearchDirectionalLight(vec2 texCoords, float zReceiver, float bias) {
+vec2 blockerSearchDirectionalLight(vec2 texCoords, float zReceiver, float bias, sampler2D shadowMap) {
 	float blockers_dist = 0;
 	float num_blockers = 0;
 	for (int i = 0; i < num_blocker_samples; i++) {
@@ -195,7 +206,7 @@ float penumbraSize(float zReceiver, float avgBlockerDist) {
 	return (zReceiver - avgBlockerDist) / zReceiver;
 }
 
-float pcf(vec2 texCoords, float zReceiver, float filterRadius, float bias) {
+float pcf(vec2 texCoords, float zReceiver, float filterRadius, float bias, sampler2D shadowMap) {
 	float sum = 0.0;
 	for (int i = 0; i < num_pcf_samples; i++) {
 		vec2 sTexCoords = texCoords + poissonDisk[i] * filterRadius;
@@ -207,16 +218,16 @@ float pcf(vec2 texCoords, float zReceiver, float filterRadius, float bias) {
 }
 
 
-float PCSSDirectionalLight(vec4 fragPosLightSpace, float bias) {
+float PCSSDirectionalLight(vec4 fragPosLightSpace, float bias, sampler2D shadowMap) {
 	vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
 	projCoords = projCoords * 0.5 + 0.5;
 	vec2 ptexCoords = projCoords.xy;
-	vec2 blocker_stats = blockerSearchDirectionalLight(ptexCoords, projCoords.z ,bias);
+	vec2 blocker_stats = blockerSearchDirectionalLight(ptexCoords, projCoords.z ,bias, shadowMap);
 	if (blocker_stats.y < 1) {
 		return 0.0f;
 	}
 	float filterradius = dirLight.size *penumbraSize(projCoords.z, blocker_stats[0]);
-	return pcf(ptexCoords, projCoords.z, filterradius, bias);
+	return pcf(ptexCoords, projCoords.z, filterradius, bias, shadowMap);
 }
 
 vec3 calcSpotLight(SpotLight light, vec3 normal, vec3 viewPos, vec3 fragPos) {
@@ -259,10 +270,14 @@ vec3 calcSpotLight(SpotLight light, vec3 normal, vec3 viewPos, vec3 fragPos) {
 		specular = light.specular * (spec * material.specular);
 	}
 
-	float bias = max(0.05 * (1.0 - dot(normal, lightDir)), 0.005);
-	//float shadow = ShadowCalculationPoisson(fragPosLightSpace, bias);
-	float shadow = PCSSDirectionalLight(fragPosLightSpace, bias);
-
+	//float bias = max(0.05 * (1.0 - dot(normal, lightDir)), 0.005);
+	//float shadow = ShadowCalculationPoisson(fragPosLightSpace, bias);sds
+	float bias = 0.00;
+	float shadow = 0.0;
+	if (light.castShadows) {
+		shadow = PCSSDirectionalLight(fragPosLightSpaceSpotLight, bias, light.shadowMap);
+		//shadow = 0.7;
+	}
 	return intensity*attenuation * (0.15*ambient + (1-shadow)*(diffuse + specular));
 }
 
@@ -300,11 +315,16 @@ vec3 calcDirectionalLight(DirLight light, vec3 inormal, vec3 viewPos) {
 		specular = light.specular * (spec * material.specular);
 	}
 
-	float bias = max(0.05 * (1.0 - dot(inormal, lightDir)), 0.005);
-	bias = 0.005f;
+	
+	//bias = 0.005f;
 	//float shadow = ShadowCalculationPoisson(fragPosLightSpace, bias);
-	float shadow = PCSSDirectionalLight(fragPosLightSpace, bias);
-	shadow = 0.0;
+	float shadow = 0.0;
+	if (light.castShadows){
+		float bias = max(0.05 * (1.0 - dot(inormal, lightDir)), 0.005);
+		//bias = 0.0002;
+		shadow = PCSSDirectionalLight(fragPosLightSpaceDirLight, bias, light.shadowMap);
+	}
+	//shadow = 0.0;
 	return (0.15*ambient + (1-shadow)*(diffuse + specular));
 }
 
@@ -367,7 +387,7 @@ void main()
 	// A lot of room to optimize; calculations done separately for each light
 	//color += calcPointLight(light, normal, fragPos, viewPos);
 	
-	color += 0.3*calcDirectionalLight(dirLight, newNormal, viewPos);
+	//color += 0.5*calcDirectionalLight(dirLight, newNormal, viewPos);
 	color += 0.5*calcSpotLight(spotLight, normal, viewPos, fragPos);
 	
 	vec3 mapped = vec3(1.0)-exp(-color*exposure);

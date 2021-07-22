@@ -6,7 +6,7 @@ in vec2 TexCoords;
 uniform sampler2D screenTexture;
 
 const float near_plane = 0.1;
-const float far_plane = 100.0f;
+const float far_plane = 100.0;
 
 float LinearizeDepth(float depth) {
     float z = depth * 2.0 - 1.0;
@@ -16,6 +16,6 @@ float LinearizeDepth(float depth) {
 void main()
 {
     float depth = texture(screenTexture, TexCoords).r;
-    FragColor = vec4(vec3(LinearizeDepth(depth)/far_plane), 1.0);
-
+    //FragColor = vec4(vec3(LinearizeDepth(depth)/far_plane), 1.0);
+    FragColor = vec4(vec3(depth), 1.0);
 }
