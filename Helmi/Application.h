@@ -136,6 +136,8 @@ private:
 	std::vector<Model> m_models;
 	CubeMap m_skybox;
 	FrameBuffer m_fbo;
+	float exposure = 1.0f;
+
 	//who has responsibility for shadowmaps (ligths???)
 	ShadowMapBuffer m_shadowmap;
 	float m_scale = 1.0f;

@@ -87,7 +87,10 @@ bool Application::loadScene(const std::string& filepath)
 	m_models.push_back(Model(filepath.c_str()));
 	//DirectionalLight dir(glm::vec3(-1.0f, -1.0f, 1.0f));
 	std::unique_ptr<Light> ptr = std::make_unique<DirectionalLight>(DirectionalLight(glm::vec3(-2.0f, 4.0f, -1.0f)));
+	std::unique_ptr<Light> ptr2 = std::make_unique<SpotLight>(SpotLight(glm::vec3(0.0f, 4.0f, 0.0f), glm::vec3(2.0f, 0.0f, 2.0f)));
+	
 	m_lights.push_back(std::move(ptr));
+	m_lights.push_back(std::move(ptr2));
 	Shader shader("Shader.vert", "Shader.frag");
 	m_shaders.push_back(shader);
 	Shader skybox("SkyboxShader.vert", "SkyboxShader.frag");
@@ -193,14 +196,14 @@ void Application::render()
 
 
 	processInput(m_window);
-	//glEnable(GL_CULL_FACE);
-	//glCullFace(GL_FRONT);
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_FRONT);
 	glm::mat4 model = glm::mat4(1.0f);
 	model = glm::scale(model, glm::vec3(m_scale));
 	//shadow map pass
 	glEnable(GL_DEPTH_TEST);
 	m_shaders[3].UseProgram();
-	glm::mat4 lightMatrix = m_lights[0]->getLightSpaceMatrix(m_scale);
+	glm::mat4 lightMatrix = m_lights[1]->getLightSpaceMatrix(m_scale);
 	m_shaders[3].setUniformMat4f("lightSpaceMatrix", lightMatrix);
 	m_shaders[3].setUniformMat4f("model", model);
 	m_shadowmap.bind();
@@ -209,7 +212,8 @@ void Application::render()
 		m.SimpleDraw(m_shaders[3]);
 	}
 	m_shadowmap.unbind();
-	//glCullFace(GL_BACK);
+	//glDisable(GL_CULL_FACE);
+	glCullFace(GL_BACK);
 	
 	//draw scene
 	m_fbo.bind();
@@ -220,7 +224,7 @@ void Application::render()
 	//draw skybox
 	
 	if (!m_show_shadowmap) {
-		glm::mat4 projection = glm::perspective(glm::radians(m_glcamera.Zoom), (float)m_width / m_height, 0.1f, 5000.0f);
+		glm::mat4 projection = glm::perspective(glm::radians(m_glcamera.Zoom), (float)m_width / m_height, 0.1f, 100.0f);
 		glm::mat4 view = m_glcamera.GetViewMatrix();
 		m_skybox.draw(m_shaders[1], projection, view);
 	
@@ -229,7 +233,8 @@ void Application::render()
 	//draw models
 		m_shaders[0].UseProgram();
 		m_lights[0]->setUniforms(m_shaders[0]);
-
+		m_lights[1]->setUniforms(m_shaders[0]);
+		m_shaders[0].setUniform1f("exposure", exposure);
 		m_shaders[0].setUniformMat4f("lightSpaceMatrix", lightMatrix);
 		m_shaders[0].setUniformMat4f("model", model);
 		m_shaders[0].setUniformMat4f("projection", projection);
@@ -292,8 +297,16 @@ void Application::render()
 	ImGui::Checkbox("show rtimage", &show_rt);
 	ImGui::Checkbox("show shadowmap", &m_show_shadowmap);
 	ImGui::Text("%s", "Lights");
-	ImGui::SliderFloat3("dir light", m_lights[0]->get_direction(), -5.0f, 5.0f);
-	ImGui::SliderFloat("scale", &m_scale, 1.0f, 20.0f);
+
+	if (ImGui::CollapsingHeader("light settings")){
+		for (size_t i = 0; i < m_lights.size(); ++i) {
+			m_lights[i]->ImGuiControls();
+		}
+	}
+	if (ImGui::CollapsingHeader("general scene settings")){
+		ImGui::SliderFloat("exposure", &exposure, 0.01f, 10.0f);
+		ImGui::SliderFloat("scale", &m_scale, 1.0f, 20.0f);
+	}
 	ImGui::End();
 
 	ImGui::Render();
@@ -312,7 +325,9 @@ void Application::update()
 void Application::reloadShaders()
 {
 	Shader bl("Shader.vert", "Shader.frag");
+	Shader showShadowShader("ShowShadowMap.vert", "ShowShadowMap.frag");
 	m_shaders[0] = bl;
+	m_shaders[4] = showShadowShader;
 }
 
 unsigned int Application::getTextureId()

@@ -3,20 +3,19 @@
 C:\Users\immon\Documents\graphics\Helmi\Helmi\helmirt\RTTriangle.h(113,40): warning C4244: 'initializing': conversion from 'double' to 'const float', possible loss of data
 C:\Users\immon\Documents\graphics\Helmi\Helmi\Helmi\Application.h(65,22): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
 C:\Users\immon\Documents\graphics\Helmi\Helmi\Helmi\Application.h(71,17): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-C:\Users\immon\Documents\graphics\Helmi\Helmi\Helmi\Application.cpp(269,43): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-C:\Users\immon\Documents\graphics\Helmi\Helmi\Helmi\Application.cpp(269,34): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-C:\Users\immon\Documents\graphics\Helmi\Helmi\Helmi\Application.cpp(282,37): warning C4312: 'type cast': conversion from 'unsigned int' to 'ImTextureID' of greater size
-C:\Users\immon\Documents\graphics\Helmi\Helmi\Helmi\Application.cpp(327,23): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-C:\Users\immon\Documents\graphics\Helmi\Helmi\Helmi\Application.cpp(328,23): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-C:\Users\immon\Documents\graphics\Helmi\Helmi\Helmi\Application.cpp(332,78): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-C:\Users\immon\Documents\graphics\Helmi\Helmi\Helmi\Application.cpp(332,39): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-C:\Users\immon\Documents\graphics\Helmi\Helmi\Helmi\Application.cpp(333,22): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-C:\Users\immon\Documents\graphics\Helmi\Helmi\Helmi\Application.cpp(334,22): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-C:\Users\immon\Documents\graphics\Helmi\Helmi\Helmi\Application.cpp(342,32): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-  Light.cpp
+C:\Users\immon\Documents\graphics\Helmi\Helmi\Helmi\Application.cpp(274,43): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\immon\Documents\graphics\Helmi\Helmi\Helmi\Application.cpp(274,34): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\immon\Documents\graphics\Helmi\Helmi\Helmi\Application.cpp(287,37): warning C4312: 'type cast': conversion from 'unsigned int' to 'ImTextureID' of greater size
+C:\Users\immon\Documents\graphics\Helmi\Helmi\Helmi\Application.cpp(342,23): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+C:\Users\immon\Documents\graphics\Helmi\Helmi\Helmi\Application.cpp(343,23): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+C:\Users\immon\Documents\graphics\Helmi\Helmi\Helmi\Application.cpp(347,78): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\immon\Documents\graphics\Helmi\Helmi\Helmi\Application.cpp(347,39): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\immon\Documents\graphics\Helmi\Helmi\Helmi\Application.cpp(348,22): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+C:\Users\immon\Documents\graphics\Helmi\Helmi\Helmi\Application.cpp(349,22): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+C:\Users\immon\Documents\graphics\Helmi\Helmi\Helmi\Application.cpp(357,32): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
   Generating code
-  2 of 3438 functions (<0.1%) were compiled, the rest were copied from previous compilation.
+  1 of 3469 functions (<0.1%) were compiled, the rest were copied from previous compilation.
     0 functions were new in current compilation
-    65 functions had inline decision re-evaluated but remain unchanged
+    64 functions had inline decision re-evaluated but remain unchanged
   Finished generating code
   Helmi.vcxproj -> C:\Users\immon\Documents\graphics\Helmi\Helmi\x64\Release\helmigl.exe
