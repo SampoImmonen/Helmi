@@ -244,7 +244,8 @@ vec3 calcSpotLight(SpotLight light, vec3 normal, vec3 viewPos, vec3 fragPos) {
 	float diff = max(dot(normal, lightDir), 0.0);
 
 	vec3 reflectDir = reflect(-lightDir, normal);
-	float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
+	vec3 halfwayDir = normalize(lightDir + viewDir);
+	float spec = pow(max(dot(normal, halfwayDir), 0.0), material.shininess);
 
 	float distance = length(light.position - fragPos);
 	float attenuation = 1.0 / (light.constant + light.linear * distance + light.quadratic * distance * distance);
@@ -292,7 +293,8 @@ vec3 calcDirectionalLight(DirLight light, vec3 inormal, vec3 viewPos) {
 	float diff = max(dot(inormal, lightDir), 0.0);
 	
 	vec3 reflectDir = reflect(-lightDir, inormal);
-	float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
+	vec3 halfwayDir = normalize(lightDir + viewDir);
+	float spec = pow(max(dot(inormal, halfwayDir), 0.0), material.shininess);
 	
 	vec3 diffuse;
 	vec3 ambient;
@@ -331,13 +333,13 @@ vec3 calcDirectionalLight(DirLight light, vec3 inormal, vec3 viewPos) {
 vec3 calcPointLight(Light light, vec3 inormal, vec3 fragPos, vec3 viewPos) {
 
 	vec3 lightDir = normalize(light.position - fragPos);
-
 	vec3 viewDir = normalize(viewPos - fragPos);
 	inormal = normalize(inormal);
 	float diff = abs(dot(inormal, lightDir));
 
 	vec3 reflectDir = reflect(-lightDir, inormal);
-	float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
+	vec3 halfwayDir = normalize(lightDir + viewDir);
+	float spec = pow(max(dot(inormal, halfwayDir), 0.0), material.shininess);
 
 	float distance = length(light.position - fragPos);
 	float attenuation = 1.0 / (light.constant + light.linear * distance + light.quadratic * distance * distance);
@@ -387,8 +389,8 @@ void main()
 	// A lot of room to optimize; calculations done separately for each light
 	//color += calcPointLight(light, normal, fragPos, viewPos);
 	
-	//color += 0.5*calcDirectionalLight(dirLight, newNormal, viewPos);
-	color += 0.5*calcSpotLight(spotLight, normal, viewPos, fragPos);
+	color += calcDirectionalLight(dirLight, newNormal, viewPos);
+	color += calcSpotLight(spotLight, normal, viewPos, fragPos);
 	
 	vec3 mapped = vec3(1.0)-exp(-color*exposure);
 	mapped = pow(mapped, vec3(1.0 / gamma));
