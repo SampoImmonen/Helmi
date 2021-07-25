@@ -37,7 +37,7 @@ glm::mat4 DirectionalLight::getLightSpaceMatrix(float scale)
 void DirectionalLight::ImGuiControls()
 {
     if (ImGui::CollapsingHeader("DirectionLight")){
-        ImGui::SliderFloat3("direction", &direction[0], -5.0f, 5.0f);
+        //ImGui::SliderFloat3("direction", &direction[0], -5.0f, 5.0f);
         ImGui::ColorEdit3("ambient", &ambient[0]);
         ImGui::ColorEdit3("diffuse", &diffuse[0]);
         ImGui::ColorEdit3("specular", &specular[0]);
@@ -116,8 +116,8 @@ void SpotLight::ImGuiControls()
     if (ImGui::CollapsingHeader("SpotLight")){
 
         //position and direction
-        ImGui::SliderFloat3("position", &m_position[0], -10.0f, 10.0f);
-        ImGui::SliderFloat3("direction", &m_direction[0], -5.0f, 5.0f);
+        //ImGui::SliderFloat3("position", &m_position[0], -10.0f, 10.0f);
+        //ImGui::SliderFloat3("direction", &m_direction[0], -5.0f, 5.0f);
     
         //colors
         ImGui::ColorEdit3("ambient", &ambient[0]);
@@ -125,15 +125,15 @@ void SpotLight::ImGuiControls()
         ImGui::ColorEdit3("specular", &specular[0]);
 
         //cutoff
-        ImGui::SliderFloat("inner cutoff", &m_cutOff, 1.0f, m_outerCutOff);
-        ImGui::SliderFloat("outer Cutoff cutoff", &m_outerCutOff, 1.0f, 89.0f);
+        //ImGui::SliderFloat("inner cutoff", &m_cutOff, 1.0f, m_outerCutOff);
+        //ImGui::SliderFloat("outer Cutoff cutoff", &m_outerCutOff, 1.0f, 89.0f);
 
-        ImGui::SliderFloat("constant", &m_constant, 0.1f, 10.0f);
-        ImGui::SliderFloat("linear", &m_linear, 0.0f, 5.0f);
-        ImGui::SliderFloat("quadratic", &m_quadratic, 0.0f, 5.0f);
+        //ImGui::SliderFloat("constant", &m_constant, 0.1f, 10.0f);
+        //ImGui::SliderFloat("linear", &m_linear, 0.0f, 5.0f);
+        //ImGui::SliderFloat("quadratic", &m_quadratic, 0.0f, 5.0f);
 
         ImGui::Checkbox("casts shadows", &castsShadows);
-        ImGui::SliderFloat("light size", &size, 0.0f, 1.0f);
+        //ImGui::SliderFloat("light size", &size, 0.0f, 1.0f);
     }
 }
 

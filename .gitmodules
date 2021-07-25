@@ -1,3 +1,0 @@
-[submodule "Dependencies/imguidocking/imgui"]
-	path = Dependencies/imguidocking/imgui
-	url = https://github.com/SampoImmonen/imgui

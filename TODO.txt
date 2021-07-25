@@ -8,9 +8,10 @@
 3. editor panel
 
 ## opengl
-1. good pcss shadows (better sampling)
-2. spotlight ligthing
-3. spotlight shadows
+1. emitting materials
+2. bloom
+3. particle systems
+4. pointlights (no shadows)
 
 ## raytrace:
 1. path tracer for diffuse material

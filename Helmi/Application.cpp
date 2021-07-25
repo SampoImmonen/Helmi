@@ -121,7 +121,7 @@ void Application::initApp()
 	std::cout << "Helmi Rendering engine 2020\n";
 	initGLFW();
 	//set glsl_version
-	m_systeminfo.glsl_version = "#version 330";
+	m_systeminfo.glsl_version = "#version 430";
 	std::cout << m_systeminfo.driver_name << "\n";
 	std::cout << "glsl version: "<< m_systeminfo.glsl_version << "\n";
 	initImGui();
@@ -132,7 +132,7 @@ void Application::initGLFW()
 {
 	glfwInit();
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	m_window = glfwCreateWindow(m_width, m_height, "Helmi", NULL, NULL);
 	
@@ -158,11 +158,21 @@ void Application::initImGui()
 {
 	//IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
-	imgui_io = ImGui::GetIO(); (void)imgui_io;
-	//imgui_io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-	//imgui_io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+	//imgui_io = ImGui::GetIO(); (void)imgui_io;
+	ImGuiIO& io = ImGui::GetIO(); (void)io;
+	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+	io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 
 	ImGui::StyleColorsDark();
+
+	ImGuiStyle& style = ImGui::GetStyle();
+	if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+	{
+		style.WindowRounding = 0.0f;
+		style.Colors[ImGuiCol_WindowBg].w = 1.0f;
+	}
+
 	ImGui_ImplGlfw_InitForOpenGL(m_window, true);
 	ImGui_ImplOpenGL3_Init(m_systeminfo.glsl_version);
 
@@ -321,13 +331,21 @@ void Application::render()
 		}
 	}
 	if (ImGui::CollapsingHeader("general scene settings")){
-		ImGui::SliderFloat("exposure", &exposure, 0.01f, 10.0f);
-		ImGui::SliderFloat("scale", &m_scale, 1.0f, 20.0f);
+		//ImGui::SliderFloat("exposure", &exposure, 0.01f, 10.0f);
+		//ImGui::SliderFloat("scale", &m_scale, 1.0f, 20.0f);
 	}
 	ImGui::End();
 
 	ImGui::Render();
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+	ImGuiIO& io = ImGui::GetIO();
+	if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
+		GLFWwindow* backup_current_context = glfwGetCurrentContext();
+		ImGui::UpdatePlatformWindows();
+		ImGui::RenderPlatformWindowsDefault();
+		glfwMakeContextCurrent(backup_current_context);
+	}
 
 	glfwSwapBuffers(m_window);
 	glfwPollEvents();

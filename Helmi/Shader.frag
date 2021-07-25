@@ -273,7 +273,7 @@ vec3 calcSpotLight(SpotLight light, vec3 normal, vec3 viewPos, vec3 fragPos) {
 
 	//float bias = max(0.05 * (1.0 - dot(normal, lightDir)), 0.005);
 	//float shadow = ShadowCalculationPoisson(fragPosLightSpace, bias);sds
-	float bias = 0.00;
+	float bias = 0.0;
 	float shadow = 0.0;
 	if (light.castShadows) {
 		shadow = PCSSDirectionalLight(fragPosLightSpaceSpotLight, bias, light.shadowMap);
@@ -323,6 +323,7 @@ vec3 calcDirectionalLight(DirLight light, vec3 inormal, vec3 viewPos) {
 	float shadow = 0.0;
 	if (light.castShadows){
 		float bias = max(0.05 * (1.0 - dot(inormal, lightDir)), 0.005);
+		bias = 
 		//bias = 0.0002;
 		shadow = PCSSDirectionalLight(fragPosLightSpaceDirLight, bias, light.shadowMap);
 	}
