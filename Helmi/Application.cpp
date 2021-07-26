@@ -56,7 +56,7 @@ Application::Application()
 {
 	
 	initApp();
-	loadScene(MODELS + std::string("sponza.obj"));
+	loadScene(MODELS + std::string("shadowstest.obj"));
 	m_skybox = CubeMap("textures/skybox/");
 	m_fbo = FrameBuffer(m_width, m_height);
 	m_shadowmap = ShadowMapBuffer(1024, 1024);
@@ -156,7 +156,7 @@ void Application::initGLFW()
 
 void Application::initImGui()
 {
-	//IMGUI_CHECKVERSION();
+	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	//imgui_io = ImGui::GetIO(); (void)imgui_io;
 	ImGuiIO& io = ImGui::GetIO(); (void)io;
@@ -200,6 +200,14 @@ void Application::setupCallbacks()
 	glfwSetScrollCallback(m_window, GLFWCallbackWrapper::scrollCallback);
 }
 
+void Application::ImGuiMouseCallback(const ImVec2& mousepos)
+{
+	m_mouseinfo.ImlastX = mousepos[0];
+	m_mouseinfo.ImlastY = mousepos[1];
+	//std::cout << m_mouseinfo.lastX << "\n";
+	std::cout << mousepos[0] << " " << mousepos[1] << "\n";
+}
+
 void Application::render()
 {	
 
@@ -225,11 +233,8 @@ void Application::render()
 	for (int i=0; i < m_lights.size(); ++i){
 		if (!m_lights[i]->castsShadows) continue;
 		m_shaders[3].UseProgram();
-		m_shaders[3].setUniformMat4f("model", model);
 		m_lights[i]->prepareShadowMap(m_shaders[3]);
-		for (auto m : m_models[0].meshes) {
-			m.SimpleDraw(m_shaders[3]);
-		}
+		m_models[0].simpleDraw(m_shaders[3]);
 		//glm::mat4 lightMatrix = m_lights[i]->getLightSpaceMatrix(m_scale);
 		//m_shaders[3].setUniformMat4f("lightSpaceMatrix", lightMatrix);
 		//m_shadowmap.bind();
@@ -262,7 +267,7 @@ void Application::render()
 		m_shaders[0].setUniformMat4f("lightSpaceMatrixSpotLight", m_lights[1]->getLightSpaceMatrix());
 		//m_shadowmap.bindDepthTexture(3);
 		//m_shaders[0].setUniformMat4f("lightSpaceMatrixSpotLight", m_lights[1]->getLightSpaceMatrix());
-		m_shaders[0].setUniformMat4f("model", model);
+		//m_shaders[0].setUniformMat4f("model", model);
 		m_shaders[0].setUniformMat4f("projection", projection);
 		m_shaders[0].setUniformMat4f("view", view);
 		m_shaders[0].setUniformVec3("viewPos", m_glcamera.Position);
@@ -294,12 +299,24 @@ void Application::render()
 	ImGui_ImplGlfw_NewFrame();
 	ImGui::NewFrame();
 
-	bool show_demo_window = true;
-	ImGui::ShowDemoWindow(&show_demo_window);
+	//bool show_demo_window = true;
+	//ImGui::ShowDemoWindow(&show_demo_window);
 
-	ImGui::SetNextWindowPos(ImVec2(0, 0));
-	ImGui::SetNextWindowSize(ImVec2(m_width, m_height));
-	ImGui::Begin("Scene", &my_tool_active, ImGuiWindowFlags_MenuBar);
+	ImGuiIO& io = ImGui::GetIO();
+	ImGuiViewport* viewport = ImGui::GetMainViewport();
+	ImGui::SetNextWindowPos(viewport->Pos);
+	ImGui::SetNextWindowSize(viewport->Size);
+	ImGui::SetNextWindowViewport(viewport->ID);
+
+	ImGuiID dockspaceId = ImGui::GetID("InvisibleWindowDockSpace"); 
+	ImGuiWindowFlags windowFlags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
+	
+	ImGui::Begin("application", nullptr, windowFlags);
+	ImGui::DockSpace(dockspaceId, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_PassthruCentralNode);
+
+	//ImGui::SetNextWindowPos(ImVec2(0, 0));
+	//ImGui::SetNextWindowSize(ImVec2(m_width, m_height));
+	//ImGui::Begin("Scene", &my_tool_active, ImGuiWindowFlags_MenuBar);
 	if (ImGui::BeginMenuBar()) {
 		if (ImGui::BeginMenu("File")) {
 			if (ImGui::MenuItem("Open...", "Ctrl+O")) {}
@@ -309,13 +326,19 @@ void Application::render()
 		}
 		ImGui::EndMenuBar();
 	}
-	ImVec2 wsize = ImGui::GetWindowSize();
+
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0,0 });
+	ImGui::Begin("Scene");
+	ImVec2 wsize = ImGui::GetContentRegionAvail();
 	unsigned int textureId = getTextureId();
 	ImGui::Image((ImTextureID)textureId, wsize, ImVec2(0, 1), ImVec2(1, 0));
-	ImVec2 cursorPos = ImGui::GetCursorPos();
+	//float x = io.MousePos.x - ImGui::GetCursorScreenPos().x;
+	//std::cout << x << "\n";
+	//ImVec2 cursorPos = ImGui::GetCursorScreenPos();
+	//ImGuiMouseCallback(cursorPos);
 	ImGui::End();
-
-
+	ImGui::PopStyleVar();
+	
 	ImGui::Begin("control panel");
 	ImGui::Text("Moi");
 	ImGui::Text("fps %fms", m_fpsinfo.fps);
@@ -331,15 +354,22 @@ void Application::render()
 		}
 	}
 	if (ImGui::CollapsingHeader("general scene settings")){
-		//ImGui::SliderFloat("exposure", &exposure, 0.01f, 10.0f);
-		//ImGui::SliderFloat("scale", &m_scale, 1.0f, 20.0f);
+		ImGui::SliderFloat("exposure", &exposure, 0.01f, 10.0f);
+		ImGui::SliderFloat("scale", &m_scale, 1.0f, 20.0f);
 	}
-	ImGui::End();
 
+	if (ImGui::CollapsingHeader("models")) {
+		for (auto& model : m_models) {
+			model.imGuiControls();
+		}
+	}
+	
+	ImGui::End();
+	ImGui::End();
 	ImGui::Render();
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
-	ImGuiIO& io = ImGui::GetIO();
+	
 	if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
 		GLFWwindow* backup_current_context = glfwGetCurrentContext();
 		ImGui::UpdatePlatformWindows();
@@ -398,6 +428,8 @@ void Application::framebufferSizeCallback(GLFWwindow* window, int width, int hei
 	m_width = width;
 	glViewport(0, 0, m_width, m_height);
 	m_fbo.Resize(m_width, m_height);
+	//app.m_rtimage.resize(height, width);
+	//should also update rtImage size???
 }
 
 void Application::processInput(GLFWwindow* window)

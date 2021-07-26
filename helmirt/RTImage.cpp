@@ -69,4 +69,11 @@ void RTImage::createTexture()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 }
+void RTImage::resize(int height, int width)
+{
+	m_height = height;
+	m_width = width;
+	m_data.resize(m_width * m_height, glm::vec3(0.0f));
+	updateTexture();
+}
 }

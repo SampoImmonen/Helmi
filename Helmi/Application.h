@@ -77,7 +77,10 @@ struct FpsInfo {
 
 struct MouseInfo {
 	bool firstMouse = true;
+	//window coordinates
 	float lastX, lastY;
+	//imGui scene viewport coordinates
+	float ImlastX, ImlastY;
 };
 
 enum ImageMode {
@@ -108,6 +111,9 @@ private:
 	void initImGui();
 	void initHelmirt();
 	void setupCallbacks();
+
+	//UIstuff
+	void ImGuiMouseCallback(const ImVec2& mousepos);
 
 	//main funcs
 	void render();

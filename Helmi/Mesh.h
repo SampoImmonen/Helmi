@@ -46,8 +46,8 @@ public:
 	Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, glMaterial mat);
 	~Mesh();
 	
-	void Draw(Shader shader);
-	void SimpleDraw(Shader shader);
+	void Draw(Shader& shader);
+	void SimpleDraw(Shader& shader);
 
 	glMaterial m_material;
 private:

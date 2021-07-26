@@ -13,16 +13,21 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
+#include "imgui.h"
+#include "imgui_impl_glfw.h"
+#include "imgui_impl_opengl3.h"
+
 class Model
 {
 public:
 	Model(const char* path);
 
-	void Draw(Shader shader);
+	void Draw(Shader& shader);
+	void imGuiControls();
+	void simpleDraw(Shader& shader);
 	std::vector<helmirt::RTTriangle> trianglesToRT();
-
-
 	std::vector<Mesh> meshes;
+
 private:
 	
 	std::string directory;
@@ -30,10 +35,9 @@ private:
 	void loadModel(const char* path);
 	void processNode(aiNode* node, const aiScene *scene);
 	Mesh processMesh(aiMesh* mesh, const aiScene *scene);
-	
+	void setUniforms(Shader& shader);
 	//transform mesh data to raytracing format
-	
-
+	glm::vec3 position, scale, rotation;
 };
 
 inline glm::vec3 color3DtoVec3(const aiColor3D& color) {

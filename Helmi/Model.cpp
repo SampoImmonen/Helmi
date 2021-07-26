@@ -1,16 +1,31 @@
 
 #include "Model.h"
 
-Model::Model(const char* path)
+Model::Model(const char* path): position(glm::vec3(0.0f)), scale(glm::vec3(1.0f)), rotation(glm::vec3(0.0f))
 {
 	loadModel(path);
 }
 
-void Model::Draw(Shader shader)
+void Model::Draw(Shader& shader)
 {
-	
+	shader.UseProgram();
+	setUniforms(shader);
 	for (int i = 0; i < meshes.size(); ++i) {
 		meshes[i].Draw(shader);
+	}
+}
+
+void Model::imGuiControls()
+{
+	if (ImGui::CollapsingHeader("model")){
+	ImGui::Text("transform");
+	ImGui::SliderFloat3("translation", &position[0], -5.0f, 5.0f);
+	ImGui::InputFloat3("rotation", &rotation[0]);
+	ImGui::SliderFloat3("scale", &scale[0], -5.0f, 5.0f);
+	
+	if (ImGui::CollapsingHeader("meshes")) {
+		ImGui::Text("show model meshes imguiControls");
+	}
 	}
 }
 
@@ -195,4 +210,21 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
 	}
 
 	return Mesh(vertices, indices, mat);
+}
+
+void Model::setUniforms(Shader& shader)
+{
+	glm::mat4 model = glm::mat4(1.0f);
+	model = glm::translate(model, position);
+	//model = glm::rotate(model, rotation);
+	model = glm::scale(model, scale);
+	shader.setUniformMat4f("model", model);
+}
+
+void Model::simpleDraw(Shader& shader)
+{
+	setUniforms(shader);
+	for (auto& mesh : meshes) {
+		mesh.SimpleDraw(shader);
+	}
 }

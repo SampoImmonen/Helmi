@@ -20,7 +20,7 @@ Mesh::~Mesh()
 {
 }
 
-void Mesh::Draw(Shader shader)
+void Mesh::Draw(Shader& shader)
 {
 
 
@@ -55,7 +55,7 @@ void Mesh::Draw(Shader shader)
 	glBindVertexArray(0);
 }
 
-void Mesh::SimpleDraw(Shader shader)
+void Mesh::SimpleDraw(Shader& shader)
 {
 	shader.UseProgram();
 	glBindVertexArray(VAO);

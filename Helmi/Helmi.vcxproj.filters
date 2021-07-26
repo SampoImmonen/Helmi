@@ -19,6 +19,9 @@
     <Filter Include="imgui">
       <UniqueIdentifier>{e7929f05-ba26-4a2d-ad32-a7958278c33c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="NewFilter1">
+      <UniqueIdentifier>{61281f00-f8b1-4fb5-b67a-dc4d106bd0e9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="App.cpp">
@@ -71,6 +74,9 @@
     </ClCompile>
     <ClCompile Include="Buffers.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Dependencies\imgui\imgui_tables.cpp">
+      <Filter>imgui</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

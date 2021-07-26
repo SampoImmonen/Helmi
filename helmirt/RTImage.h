@@ -23,6 +23,7 @@ namespace helmirt {
 		void bindTexture(int textureunit=0);
 		unsigned int* getTexture();
 		void createTexture();
+		void resize(int height, int width);
 
 	private:
 		int m_height, m_width;
