@@ -17,6 +17,11 @@
 1. path tracer for diffuse material
 
 
+#other features:
+1. show shadowmap of a light under light properties
+2. show bloom brightness texture under bloom settings
+
+
 #controllable parameters:
 exposure (fs)
 gamma(fs)

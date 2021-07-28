@@ -258,10 +258,12 @@
     <ClInclude Include="Timer.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="GaussianBlurShader.frag" />
     <None Include="ImageShader.frag" />
     <None Include="ImageShader.vert" />
     <None Include="lightShader.frag" />
     <None Include="lightShader.vert" />
+    <None Include="PostProcessingBasic.frag" />
     <None Include="Shader.frag" />
     <None Include="Shader.vert" />
     <None Include="ShadowDepthShader.frag" />

@@ -1,7 +1,8 @@
 #version 330 core
 
 
-out vec4 FragColor;
+layout (location = 0) out vec4 FragColor;
+layout(location = 1) out vec4 BrightColor;
 
 in vec3 normal;
 in vec3 fragPos;
@@ -88,16 +89,19 @@ struct Material {
     vec3 ambient;
     vec3 diffuse;
     vec3 specular;
+	vec3 emission;
 
 	float shininess;
 
 	bool hasDiffuse;
 	bool hasSpecular;
 	bool hasNormal;
+	bool hasEmission;
 
 	sampler2D diffuseMap;
 	sampler2D specularMap;
 	sampler2D normalMap;
+	sampler2D emissionMap;
 };
 
 
@@ -385,15 +389,28 @@ void main()
 		newNormal = normalize(normal * 2.0 - 1.0);
 		newNormal = normalize(TBN * newNormal);
 	}
+	vec3 emission = material.emission;
+	if (material.hasEmission) {
+		emission = texture(material.emissionMap, texCoords).rgb;
+	}
+
 
 	vec3 color;
 	// A lot of room to optimize; calculations done separately for each light
 	//color += calcPointLight(light, normal, fragPos, viewPos);
 	
 	color += calcDirectionalLight(dirLight, newNormal, viewPos);
-	color += calcSpotLight(spotLight, normal, viewPos, fragPos);
-	
-	vec3 mapped = vec3(1.0)-exp(-color*exposure);
-	mapped = pow(mapped, vec3(1.0 / gamma));
-    FragColor = vec4(mapped, 1.0);
+	//color += calcSpotLight(spotLight, normal, viewPos, fragPos);
+	color += 1.3*emission;
+	//vec3 mapped = vec3(1.0)-exp(-color*exposure);
+	//mapped = pow(mapped, vec3(1.0 / gamma));
+    FragColor = vec4(color, 1.0);
+	float brightness = dot(FragColor.rgb, vec3(0.2126, 0.7152, 0.0722));
+	if (brightness > 1.0) {
+		BrightColor = vec4(FragColor.rgb, 1.0);
+	}
+	else {
+		BrightColor = vec4(0.0, 0.0, 0.0, 1.0);
+	}
+
 }

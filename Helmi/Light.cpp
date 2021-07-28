@@ -16,8 +16,8 @@ void DirectionalLight::setUniforms(Shader& shader)
     shader.setUniformVec3("dirLight.direction", direction);
     shader.setUniform1f("dirLight.size", size);
     shader.setUniformInt("dirLight.castShadows", castsShadows);
-    shader.setUniformInt("dirLight.shadowMap", 3);
-    m_shadowMap.bindDepthTexture(3);
+    shader.setUniformInt("dirLight.shadowMap", 4);
+    m_shadowMap.bindDepthTexture(4);
 }
 
 
@@ -92,8 +92,8 @@ void SpotLight::setUniforms(Shader& shader)
     shader.setUniform1f("spotLight.quadratic", m_quadratic);
     shader.setUniform1f("spotLight.size", size);
     shader.setUniformInt("spotLight.castShadows", castsShadows);
-    shader.setUniformInt("spotLight.shadowMap", 4);
-    m_shadowMap.bindDepthTexture(4);
+    shader.setUniformInt("spotLight.shadowMap", 5);
+    m_shadowMap.bindDepthTexture(5);
 
 }
 

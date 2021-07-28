@@ -157,5 +157,11 @@
     <None Include="ShowShadowMap.frag">
       <Filter>shaders</Filter>
     </None>
+    <None Include="PostProcessingBasic.frag">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="GaussianBlurShader.frag">
+      <Filter>shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

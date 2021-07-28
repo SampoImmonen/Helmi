@@ -24,15 +24,19 @@ struct glMaterial {
 	glm::vec3 ambient = glm::vec3(0.0f);
 	glm::vec3 diffuse = glm::vec3(0.0f);
 	glm::vec3 specular = glm::vec3(0.0f);
+	glm::vec3 emission = glm::vec3(0.0f);
 
 	std::string diffuse_map_name;
 	std::string specular_map_name;
 	std::string normal_map_name;
+	std::string emission_map_name;
 
 	std::shared_ptr<Texture2D> m_diffuse_map;
 	std::shared_ptr<Texture2D> m_specular_map;
 	std::shared_ptr<Texture2D> m_normal_map;
+	std::shared_ptr<Texture2D> m_emission_map;
 
+	float shininess = 1.0f;
 };
 
 class Mesh

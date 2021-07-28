@@ -21,7 +21,7 @@ void Model::imGuiControls()
 	ImGui::Text("transform");
 	ImGui::SliderFloat3("translation", &position[0], -5.0f, 5.0f);
 	ImGui::InputFloat3("rotation", &rotation[0]);
-	ImGui::SliderFloat3("scale", &scale[0], -5.0f, 5.0f);
+	ImGui::SliderFloat3("scale", &scale[0], 0.1f, 5.0f);
 	
 	if (ImGui::CollapsingHeader("meshes")) {
 		ImGui::Text("show model meshes imguiControls");
@@ -177,9 +177,9 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
 		mat.specular = color3DtoVec3(color);
 		material->Get(AI_MATKEY_COLOR_AMBIENT, color);
 		mat.ambient = color3DtoVec3(color);
+		material->Get(AI_MATKEY_SHININESS, mat.shininess);
 
-
-		//make a method to load textures?????
+		//make a method to load textures (code duplication)?????
 
 		//fetch diffuse texture
 		textureName = "";
@@ -205,6 +205,13 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
 		mat.normal_map_name = textureName.C_Str();
 		if (!mat.normal_map_name.empty()) {
 			mat.m_normal_map = std::make_shared<Texture2D>(Texture2D(MODELS + mat.normal_map_name));
+		}
+
+		textureName = "";
+		material->Get(AI_MATKEY_TEXTURE(aiTextureType_EMISSIVE, 0), textureName);
+		mat.emission_map_name = textureName.C_Str();
+		if (!mat.emission_map_name.empty()) {
+			mat.m_emission_map = std::make_shared<Texture2D>(Texture2D(MODELS + mat.emission_map_name));
 		}
 
 	}

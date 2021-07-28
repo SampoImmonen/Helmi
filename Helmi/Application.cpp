@@ -59,6 +59,8 @@ Application::Application()
 	loadScene(MODELS + std::string("shadowstest.obj"));
 	m_skybox = CubeMap("textures/skybox/");
 	m_fbo = FrameBuffer(m_width, m_height);
+	m_hdrFBO = HDRFrameBuffer(m_width, m_height);
+	m_pingpongBuffer = PingPongFrameBuffer(m_width, m_height);
 	m_shadowmap = ShadowMapBuffer(1024, 1024);
 
 	glGenVertexArrays(1, &qVAO);
@@ -101,6 +103,10 @@ bool Application::loadScene(const std::string& filepath)
 	m_shaders.push_back(shadowShader);
 	Shader showShadowShader("ShowShadowMap.vert", "ShowShadowMap.frag");
 	m_shaders.push_back(showShadowShader);
+	Shader postProcessingShader("ImageShader.vert", "PostProcessingBasic.frag");
+	m_shaders.push_back(postProcessingShader);
+	Shader bloomBlurShader("ImageShader.vert", "GaussianBlurShader.frag");
+	m_shaders.push_back(bloomBlurShader);
 	//load scene into rtformat
 	initHelmirt();
 	return true;
@@ -208,10 +214,21 @@ void Application::ImGuiMouseCallback(const ImVec2& mousepos)
 	std::cout << mousepos[0] << " " << mousepos[1] << "\n";
 }
 
+void Application::ImGuiContentResizeCallback(const ImVec2& size)
+{
+	
+	if ((size[0] != m_width) || (size[1] != m_height)) {
+		m_width = size[0];
+		m_height = size[1];
+		glViewport(0, 0, m_height, m_width);
+		m_fbo.Resize(m_width, m_height);
+		m_hdrFBO.resize(m_width, m_height);
+		m_pingpongBuffer.resize(m_width, m_height);
+	}
+}
+
 void Application::render()
 {	
-
-
 
 	processInput(m_window);
 	//shadow map pass
@@ -245,24 +262,22 @@ void Application::render()
 	glCullFace(GL_BACK);
 	
 	//draw scene
-	m_fbo.bind();
+	m_hdrFBO.bind();
 	glEnable(GL_DEPTH_TEST);
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	//draw skybox
-	
+	glm::mat4 projection = glm::perspective(glm::radians(m_glcamera.Zoom), (float)m_width / m_height, 0.1f, 100.0f);
+	glm::mat4 view = m_glcamera.GetViewMatrix();
 	if (!m_show_shadowmap) {
-		glm::mat4 projection = glm::perspective(glm::radians(m_glcamera.Zoom), (float)m_width / m_height, 0.1f, 100.0f);
-		glm::mat4 view = m_glcamera.GetViewMatrix();
+		
+		//draw skybox
 		m_skybox.draw(m_shaders[1], projection, view);
-	
-	
-	//draw models
+		//draw models
 		m_shaders[0].UseProgram();
 		m_lights[0]->setUniforms(m_shaders[0]);
 		m_lights[1]->setUniforms(m_shaders[0]);
-		m_shaders[0].setUniform1f("exposure", exposure);
+		//m_shaders[0].setUniform1f("exposure", exposure);
 		m_shaders[0].setUniformMat4f("lightSpaceMatrixDirLight", m_lights[0]->getLightSpaceMatrix());
 		m_shaders[0].setUniformMat4f("lightSpaceMatrixSpotLight", m_lights[1]->getLightSpaceMatrix());
 		//m_shadowmap.bindDepthTexture(3);
@@ -283,10 +298,33 @@ void Application::render()
 		m_lights[0]->bindShadowMapTexture(0);
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 	}
-	m_fbo.unbind();
+	m_hdrFBO.unbind();
+
 	//glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
+
+	//blurring if bloom enabled
+	if (m_bloomOn) {
+		bloomBlur(m_shaders[6], 10);
+	}
+	//glClear(GL_COLOR_BUFFER_BIT);
+	//post processing
+	m_fbo.bind();
+	m_shaders[5].UseProgram();
+	m_shaders[5].setUniform1f("exposure", exposure);
+	glBindVertexArray(qVAO);
+	glDisable(GL_DEPTH_TEST);
+	m_shaders[5].setUniformInt("screenTexture", 0);
+	m_hdrFBO.bindTextures();
+	m_shaders[5].setUniformInt("bloomOn", m_bloomOn);
+	if (m_bloomOn) {
+		m_shaders[5].setUniformInt("bloomBlur", 1);
+		m_pingpongBuffer.bindTexture(0, 1);
+	}
+	//m_pingpongBuffer.bindTexture(0);
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+	m_fbo.unbind();
 
 	//m_shaders[2].UseProgram();
 	//GL_CHECK(glBindVertexArray(qVAO));
@@ -330,10 +368,13 @@ void Application::render()
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0,0 });
 	ImGui::Begin("Scene");
 	ImVec2 wsize = ImGui::GetContentRegionAvail();
+
+	//std::cout << wsize[0] << " " << wsize[1] << "\n";
+	ImVec2 cursorPos = ImGui::GetCursorScreenPos();
 	unsigned int textureId = getTextureId();
 	ImGui::Image((ImTextureID)textureId, wsize, ImVec2(0, 1), ImVec2(1, 0));
 	//float x = io.MousePos.x - ImGui::GetCursorScreenPos().x;
-	//std::cout << x << "\n";
+	//td::cout << cursorPos[0] << "\n";
 	//ImVec2 cursorPos = ImGui::GetCursorScreenPos();
 	//ImGuiMouseCallback(cursorPos);
 	ImGui::End();
@@ -356,6 +397,7 @@ void Application::render()
 	if (ImGui::CollapsingHeader("general scene settings")){
 		ImGui::SliderFloat("exposure", &exposure, 0.01f, 10.0f);
 		ImGui::SliderFloat("scale", &m_scale, 1.0f, 20.0f);
+		ImGui::Checkbox("bloom", &m_bloomOn);
 	}
 
 	if (ImGui::CollapsingHeader("models")) {
@@ -366,6 +408,7 @@ void Application::render()
 	
 	ImGui::End();
 	ImGui::End();
+	
 	ImGui::Render();
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
@@ -377,6 +420,7 @@ void Application::render()
 		glfwMakeContextCurrent(backup_current_context);
 	}
 
+	ImGuiContentResizeCallback(wsize);
 	glfwSwapBuffers(m_window);
 	glfwPollEvents();
 }
@@ -385,6 +429,31 @@ void Application::update()
 {
 	//update state of scene objects etc...
 	//no dynamic objects yet...
+}
+
+void Application::bloomBlur(Shader& shader, int iterations)
+{
+	bool horizontal = true, first_iteration = true;
+	shader.UseProgram();
+	glBindVertexArray(qVAO);
+	//glDisable(GL_DEPTH_TEST);
+	glActiveTexture(GL_TEXTURE0);
+	for (unsigned int i = 0; i < iterations; ++i) {
+		m_pingpongBuffer.bindFrameBuffer(horizontal);
+		shader.setUniformInt("horizontal", horizontal);
+		if (first_iteration) {
+			glBindTexture(GL_TEXTURE_2D, m_hdrFBO.getBloomTexture());
+		}
+		else{
+			m_pingpongBuffer.bindTexture(!horizontal);
+		}
+		
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+		horizontal = !horizontal;
+		if (first_iteration) {
+			first_iteration = false;
+		}
+	}
 }
 
 void Application::reloadShaders()
@@ -424,13 +493,16 @@ void Application::scrollCallback(GLFWwindow* window, double xoffset, double yoff
 
 void Application::framebufferSizeCallback(GLFWwindow* window, int width, int height)
 {
-	m_height = height;
-	m_width = width;
-	glViewport(0, 0, m_width, m_height);
-	m_fbo.Resize(m_width, m_height);
+	//m_height = height;
+	//m_width = width;
+	//glViewport(0, 0, m_width, m_height);
+	//m_fbo.Resize(m_width, m_height);
+	//m_hdrFBO.resize(m_width, m_height);
 	//app.m_rtimage.resize(height, width);
 	//should also update rtImage size???
 }
+
+
 
 void Application::processInput(GLFWwindow* window)
 {

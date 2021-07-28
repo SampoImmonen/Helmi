@@ -3,11 +3,12 @@
 #include <iostream>
 #include "glad/glad.h"
 
+
 class FrameBuffer {
 	
 public:
 	FrameBuffer() = default;
-	FrameBuffer(unsigned int width, unsigned int height);
+	FrameBuffer(unsigned int width, unsigned int height, bool isHdr = false);
 	~FrameBuffer();
 
 	void bind();
@@ -19,6 +20,7 @@ public:
 	unsigned int m_fbo, m_color, m_rbo;
 private:
 	unsigned int m_width, m_height;
+	bool m_isHdr = false;
 	bool checkCompleteness();
 };
 
@@ -38,6 +40,46 @@ private:
 	unsigned int m_framebufferId, m_depthmapId;
 	bool checkCompleteness();
 };
+
+
+class HDRFrameBuffer {
+//used for HDR Bloom
+public:
+	HDRFrameBuffer() = default;
+	HDRFrameBuffer(unsigned int height, unsigned int width);
+	~HDRFrameBuffer() {}
+	void bind();
+	void unbind();
+	void resize(unsigned int height, unsigned int width);
+
+	void bindTextures();
+	unsigned int* getTexture(int i);
+	unsigned int getBloomTexture();
+private:
+	unsigned int m_fbo, m_rbo;
+	unsigned int m_colorBuffers[2];
+	unsigned int m_height, m_width;
+	unsigned int m_attachments[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
+	bool checkCompleteness();
+
+};
+
+
+class PingPongFrameBuffer {
+public:
+	PingPongFrameBuffer() = default;
+	PingPongFrameBuffer(unsigned int height, unsigned int width);
+	void resize(unsigned int height, unsigned int width);
+	void bindTexture(int texture);
+	void bindTexture(int texture, int textureslot);
+	void bindFrameBuffer(int framebuffer);
+private:
+	unsigned int m_fbos[2];
+	unsigned int m_colorBuffers[2];
+	unsigned int m_height, m_width;
+	bool checkCompleteness();
+};
+
 
 
 class VertexBuffer {

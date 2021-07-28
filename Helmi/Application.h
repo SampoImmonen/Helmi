@@ -114,10 +114,12 @@ private:
 
 	//UIstuff
 	void ImGuiMouseCallback(const ImVec2& mousepos);
+	void ImGuiContentResizeCallback(const ImVec2& size);
 
 	//main funcs
 	void render();
 	void update();
+	void bloomBlur(Shader& shader, int iterations);
 
 	//utils
 	void reloadShaders();
@@ -142,7 +144,10 @@ private:
 	std::vector<Model> m_models;
 	CubeMap m_skybox;
 	FrameBuffer m_fbo;
+	HDRFrameBuffer m_hdrFBO;
+	PingPongFrameBuffer m_pingpongBuffer;
 	float exposure = 1.0f;
+	bool m_bloomOn = false;
 
 	//who has responsibility for shadowmaps (ligths???)
 	ShadowMapBuffer m_shadowmap, m_shadowmap2;
