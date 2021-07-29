@@ -72,6 +72,7 @@ Application::Application()
 	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(1);
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+
 }
 
 
@@ -122,6 +123,22 @@ void Application::startApplication()
 	}
 }
 
+bool Application::loadModel(const std::string& filepath)
+{
+	return false;
+}
+
+void Application::loadNewScene()
+{
+	std::string path = FileHandler::openFilePath();
+	if (!path.empty()) {
+		std::cout << "loading model from: " << path << "\n";
+		m_models[0] = Model(path.c_str());
+	}
+	
+
+}
+
 void Application::initApp()
 {
 	std::cout << "Helmi Rendering engine 2020\n";
@@ -141,7 +158,7 @@ void Application::initGLFW()
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	m_window = glfwCreateWindow(m_width, m_height, "Helmi", NULL, NULL);
-	
+
 	if (m_window == NULL) {
 		std::cout << "Failed to create GLFW Window\n";
 		std::cout << "exiting program\n";
@@ -286,6 +303,7 @@ void Application::render()
 		m_shaders[0].setUniformMat4f("projection", projection);
 		m_shaders[0].setUniformMat4f("view", view);
 		m_shaders[0].setUniformVec3("viewPos", m_glcamera.Position);
+		m_shaders[0].setUniform1f("bloomThreshold", m_bloomThreshold);
 		//m_shaders[0].setUniformInt("shadowMap", 3);
 		//m_shadowmap.bindDepthTexture(3);
 		m_models[0].Draw(m_shaders[0]);
@@ -306,7 +324,7 @@ void Application::render()
 
 	//blurring if bloom enabled
 	if (m_bloomOn) {
-		bloomBlur(m_shaders[6], 10);
+		bloomBlur(m_shaders[6], m_numBloomIterations);
 	}
 	//glClear(GL_COLOR_BUFFER_BIT);
 	//post processing
@@ -357,7 +375,7 @@ void Application::render()
 	//ImGui::Begin("Scene", &my_tool_active, ImGuiWindowFlags_MenuBar);
 	if (ImGui::BeginMenuBar()) {
 		if (ImGui::BeginMenu("File")) {
-			if (ImGui::MenuItem("Open...", "Ctrl+O")) {}
+			if (ImGui::MenuItem("Open...", "Ctrl+O")) { loadNewScene(); }
 			if (ImGui::MenuItem("Save...", "Ctrl+S")) {}
 			if (ImGui::MenuItem("Close", "Ctrl+W")) { my_tool_active = false; }
 			ImGui::EndMenu();
@@ -398,6 +416,12 @@ void Application::render()
 		ImGui::SliderFloat("exposure", &exposure, 0.01f, 10.0f);
 		ImGui::SliderFloat("scale", &m_scale, 1.0f, 20.0f);
 		ImGui::Checkbox("bloom", &m_bloomOn);
+		if (m_bloomOn) {
+			if (ImGui::CollapsingHeader("bloom settings")) {
+				ImGui::InputInt("Number of blur iterations", &m_numBloomIterations);
+				ImGui::SliderFloat("bloom threshold", &m_bloomThreshold, 0.2f, 1.5f);
+			}
+		}
 	}
 
 	if (ImGui::CollapsingHeader("models")) {
@@ -447,7 +471,6 @@ void Application::bloomBlur(Shader& shader, int iterations)
 		else{
 			m_pingpongBuffer.bindTexture(!horizontal);
 		}
-		
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 		horizontal = !horizontal;
 		if (first_iteration) {
@@ -462,6 +485,11 @@ void Application::reloadShaders()
 	Shader showShadowShader("ShowShadowMap.vert", "ShowShadowMap.frag");
 	m_shaders[0] = bl;
 	m_shaders[4] = showShadowShader;
+}
+
+auto Application::getNativeWindow()
+{
+	return glfwGetWin32Window(m_window);
 }
 
 unsigned int Application::getTextureId()

@@ -12,6 +12,7 @@ in vec4 fragPosLightSpaceDirLight;
 in vec4 fragPosLightSpaceSpotLight;
 
 uniform vec3 viewPos;
+uniform float bloomThreshold = 1.0;
 
 
 const int num_blocker_samples = 16;
@@ -400,13 +401,13 @@ void main()
 	//color += calcPointLight(light, normal, fragPos, viewPos);
 	
 	color += calcDirectionalLight(dirLight, newNormal, viewPos);
-	//color += calcSpotLight(spotLight, normal, viewPos, fragPos);
+	color += calcSpotLight(spotLight, normal, viewPos, fragPos);
 	color += 1.3*emission;
 	//vec3 mapped = vec3(1.0)-exp(-color*exposure);
 	//mapped = pow(mapped, vec3(1.0 / gamma));
     FragColor = vec4(color, 1.0);
 	float brightness = dot(FragColor.rgb, vec3(0.2126, 0.7152, 0.0722));
-	if (brightness > 1.0) {
+	if (brightness > bloomThreshold) {
 		BrightColor = vec4(FragColor.rgb, 1.0);
 	}
 	else {

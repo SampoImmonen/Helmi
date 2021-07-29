@@ -1,10 +1,13 @@
 #pragma once
+#include "windows.h"
 
 #include <string>
 #include <memory>
 
 #include <glad/glad.h> 
 #include "GLFW/glfw3.h"
+#define GLFW_EXPOSE_NATIVE_WIN32
+#include "GLFW/glfw3native.h"
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
@@ -16,6 +19,7 @@
 #include "CubeMap.h"
 #include "App.h"
 #include "Buffers.h"
+#include "FileHandler.h"
 
 
 
@@ -97,6 +101,8 @@ public:
 
 	bool loadScene(const std::string& filepath);
 	void startApplication();
+	bool loadModel(const std::string& filepath);
+	void loadNewScene();
 
 	//callbacks
 	void mouseCallback(GLFWwindow* window, double xpos, double ypos);
@@ -123,7 +129,7 @@ private:
 
 	//utils
 	void reloadShaders();
-
+	auto getNativeWindow();
 
 	int m_width = 800, m_height = 600;
 	Camera m_glcamera;
@@ -147,7 +153,10 @@ private:
 	HDRFrameBuffer m_hdrFBO;
 	PingPongFrameBuffer m_pingpongBuffer;
 	float exposure = 1.0f;
+	//bloom options
 	bool m_bloomOn = false;
+	int m_numBloomIterations = 10;
+	float m_bloomThreshold = 1.0f;
 
 	//who has responsibility for shadowmaps (ligths???)
 	ShadowMapBuffer m_shadowmap, m_shadowmap2;
