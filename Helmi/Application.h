@@ -20,7 +20,7 @@
 #include "App.h"
 #include "Buffers.h"
 #include "FileHandler.h"
-
+#include "rtAreaLight.h"
 
 
 struct ScreenVAO {
@@ -131,6 +131,10 @@ private:
 	void reloadShaders();
 	auto getNativeWindow();
 
+	//rtUtils
+	void drawrtLights(const glm::mat4& projection, const glm::mat4& view);
+
+
 	int m_width = 800, m_height = 600;
 	Camera m_glcamera;
 	GLFWwindow* m_window;
@@ -138,7 +142,8 @@ private:
 
 	//helmirt
 	helmirt::App app;
-
+	helmirt::rtAreaLight m_rtArealight;
+	bool m_drawrtprops = false;
 	//system information
 	FpsInfo m_fpsinfo;
 	SystemInfo m_systeminfo;
@@ -164,6 +169,7 @@ private:
 
 	//temporary solution
 	unsigned int qVAO, qVBO;
+	unsigned int threeDqVAO, threeDqVBO;
 
 	//imgui
 	bool my_tool_active;

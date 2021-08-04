@@ -149,6 +149,7 @@
     <ClInclude Include="Ray.h" />
     <ClInclude Include="RayhitResult.h" />
     <ClInclude Include="Renderer.h" />
+    <ClInclude Include="rtAreaLight.h" />
     <ClInclude Include="RTImage.h" />
     <ClInclude Include="rtTexture2D.h" />
     <ClInclude Include="RTTriangle.h" />
@@ -159,6 +160,7 @@
   <ItemGroup>
     <ClCompile Include="App.cpp" />
     <ClCompile Include="Renderer.cpp" />
+    <ClCompile Include="rtAreaLight.cpp" />
     <ClCompile Include="RTImage.cpp" />
     <ClCompile Include="rtTexture2D.cpp" />
     <ClCompile Include="RTTriangle.cpp" />

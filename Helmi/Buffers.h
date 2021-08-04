@@ -15,7 +15,7 @@ public:
 	void unbind();
 	void bindColorTexture();
 	unsigned int* getTexture();
-	void Resize(unsigned int width, unsigned int height);
+	void Resize(unsigned int height, unsigned int width);
 
 	unsigned int m_fbo, m_color, m_rbo;
 private:

@@ -59,7 +59,7 @@ unsigned int* FrameBuffer::getTexture()
 	return &m_color;
 }
 
-void FrameBuffer::Resize(unsigned int width, unsigned int height)
+void FrameBuffer::Resize(unsigned int height, unsigned int width)
 {
 	m_width = width;
 	m_height = height;

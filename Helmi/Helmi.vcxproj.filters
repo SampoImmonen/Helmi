@@ -169,5 +169,11 @@
     <None Include="GaussianBlurShader.frag">
       <Filter>shaders</Filter>
     </None>
+    <None Include="3DquadShader.vert">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="3DquadShader.frag">
+      <Filter>shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

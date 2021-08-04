@@ -19,7 +19,7 @@ void CheckOpenGLError(const char* stmt, const char* fname, int line)
 #define GL_CHECK(stmt) stmt
 #endif
 
-float quadVertices[] = {
+const float quadVertices[] = {
 	// positions   // texCoords
 	-1.0f,  1.0f,  0.0f, 1.0f,
 	-1.0f, -1.0f,  0.0f, 0.0f,
@@ -28,6 +28,17 @@ float quadVertices[] = {
 	-1.0f,  1.0f,  0.0f, 1.0f,
 	 1.0f, -1.0f,  1.0f, 0.0f,
 	 1.0f,  1.0f,  1.0f, 1.0f
+};
+
+
+const float lightquadVertices[] = {
+	-1.0f, 1.0f, 0.0f,  0.0f, 1.0f,
+	-1.0f, -1.0f, 0.0f,  0.0f, 0.0f,
+	 1.0f, -1.0f, 0.0f,  1.0f, 0.0f,
+
+	-1.0f, 1.0f,  0.0f,  0.0f, 1.0f,
+	 1.0f, -1.0f, 0.0f,  1.0f, 0.0f,
+	 1.0f, 1.0f, 0.0f,  1.0f, 1.0f
 };
 
 void Application::GLFWCallbackWrapper::MouseCallback(GLFWwindow* window, double positionX, double positionY)
@@ -63,6 +74,7 @@ Application::Application()
 	m_pingpongBuffer = PingPongFrameBuffer(m_width, m_height);
 	m_shadowmap = ShadowMapBuffer(1024, 1024);
 
+	//make screenquad vao
 	glGenVertexArrays(1, &qVAO);
 	glGenBuffers(1, &qVBO);
 	glBindVertexArray(qVAO);
@@ -72,7 +84,17 @@ Application::Application()
 	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(1);
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
-
+	
+	//VAO for drawing ligthpositions
+	glGenVertexArrays(1, &threeDqVAO);
+	glGenBuffers(1, &threeDqVBO);
+	glBindVertexArray(threeDqVAO);
+	glBindBuffer(GL_ARRAY_BUFFER, threeDqVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(lightquadVertices), &lightquadVertices, GL_STATIC_DRAW);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
 }
 
 
@@ -94,7 +116,7 @@ bool Application::loadScene(const std::string& filepath)
 	
 	m_lights.push_back(std::move(ptr));
 	m_lights.push_back(std::move(ptr2));
-	Shader shader("Shader.vert", "Shader.frag");
+	Shader shader("Shader.vert", "Shader.frag"); // 0
 	m_shaders.push_back(shader);
 	Shader skybox("SkyboxShader.vert", "SkyboxShader.frag");
 	m_shaders.push_back(skybox);
@@ -108,6 +130,8 @@ bool Application::loadScene(const std::string& filepath)
 	m_shaders.push_back(postProcessingShader);
 	Shader bloomBlurShader("ImageShader.vert", "GaussianBlurShader.frag");
 	m_shaders.push_back(bloomBlurShader);
+	Shader areaLightShader("3DquadShader.vert", "3DquadShader.frag"); // 7
+	m_shaders.push_back(areaLightShader);
 	//load scene into rtformat
 	initHelmirt();
 	return true;
@@ -234,13 +258,14 @@ void Application::ImGuiMouseCallback(const ImVec2& mousepos)
 void Application::ImGuiContentResizeCallback(const ImVec2& size)
 {
 	
+	//size[0] is width and size[1] is height of content panel
 	if ((size[0] != m_width) || (size[1] != m_height)) {
 		m_width = size[0];
 		m_height = size[1];
-		glViewport(0, 0, m_height, m_width);
-		m_fbo.Resize(m_width, m_height);
-		m_hdrFBO.resize(m_width, m_height);
-		m_pingpongBuffer.resize(m_width, m_height);
+		glViewport(0, 0, m_width, m_height);
+		m_fbo.Resize(m_height, m_width);
+		m_hdrFBO.resize(m_height, m_width);
+		m_pingpongBuffer.resize(m_height, m_width);
 	}
 }
 
@@ -251,29 +276,12 @@ void Application::render()
 	//shadow map pass
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_FRONT);
-	glm::mat4 model = glm::mat4(1.0f);
-	model = glm::scale(model, glm::vec3(m_scale));
 	glEnable(GL_DEPTH_TEST);
-	//m_shaders[3].UseProgram();
-	//m_shaders[3].setUniformMat4f("model", model);
-	//glm::mat4 lightMatrix = m_lights[0]->getLightSpaceMatrix(m_scale);
-	//m_shaders[3].setUniformMat4f("lightSpaceMatrix", lightMatrix);
-	//m_shadowmap.bind();
-	//for (auto m : m_models[0].meshes) {
-	//	m.SimpleDraw(m_shaders[3]);
-	//}
-	//m_shadowmap.unbind();
-
 	for (int i=0; i < m_lights.size(); ++i){
 		if (!m_lights[i]->castsShadows) continue;
 		m_shaders[3].UseProgram();
 		m_lights[i]->prepareShadowMap(m_shaders[3]);
 		m_models[0].simpleDraw(m_shaders[3]);
-		//glm::mat4 lightMatrix = m_lights[i]->getLightSpaceMatrix(m_scale);
-		//m_shaders[3].setUniformMat4f("lightSpaceMatrix", lightMatrix);
-		//m_shadowmap.bind();
-		//m_models[0].Draw(m_shaders[0]);
-		//m_shadowmap.unbind();
 	}
 	//glDisable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
@@ -307,6 +315,10 @@ void Application::render()
 		//m_shaders[0].setUniformInt("shadowMap", 3);
 		//m_shadowmap.bindDepthTexture(3);
 		m_models[0].Draw(m_shaders[0]);
+		if (m_drawrtprops) {
+			glDisable(GL_CULL_FACE);
+			drawrtLights(projection, view);
+		}
 	}
 	if (m_show_shadowmap) {
 		m_shaders[4].UseProgram();
@@ -344,19 +356,14 @@ void Application::render()
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 	m_fbo.unbind();
 
-	//m_shaders[2].UseProgram();
-	//GL_CHECK(glBindVertexArray(qVAO));
-	//glDisable(GL_DEPTH_TEST);
-	//m_fbo.bindColorTexture();
-	//GL_CHECK(glDrawArrays(GL_TRIANGLES, 0, 6));
 
-	//render imgui 
+	//render pre render
 	ImGui_ImplOpenGL3_NewFrame();
 	ImGui_ImplGlfw_NewFrame();
 	ImGui::NewFrame();
 
-	//bool show_demo_window = true;
-	//ImGui::ShowDemoWindow(&show_demo_window);
+	bool show_demo_window = true;
+	ImGui::ShowDemoWindow(&show_demo_window);
 
 	ImGuiIO& io = ImGui::GetIO();
 	ImGuiViewport* viewport = ImGui::GetMainViewport();
@@ -365,14 +372,12 @@ void Application::render()
 	ImGui::SetNextWindowViewport(viewport->ID);
 
 	ImGuiID dockspaceId = ImGui::GetID("InvisibleWindowDockSpace"); 
-	ImGuiWindowFlags windowFlags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
+	ImGuiWindowFlags windowFlags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse;
 	
+	//imgui render
 	ImGui::Begin("application", nullptr, windowFlags);
 	ImGui::DockSpace(dockspaceId, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_PassthruCentralNode);
 
-	//ImGui::SetNextWindowPos(ImVec2(0, 0));
-	//ImGui::SetNextWindowSize(ImVec2(m_width, m_height));
-	//ImGui::Begin("Scene", &my_tool_active, ImGuiWindowFlags_MenuBar);
 	if (ImGui::BeginMenuBar()) {
 		if (ImGui::BeginMenu("File")) {
 			if (ImGui::MenuItem("Open...", "Ctrl+O")) { loadNewScene(); }
@@ -383,21 +388,17 @@ void Application::render()
 		ImGui::EndMenuBar();
 	}
 
+	//render scene into content panel
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0,0 });
 	ImGui::Begin("Scene");
 	ImVec2 wsize = ImGui::GetContentRegionAvail();
-
-	//std::cout << wsize[0] << " " << wsize[1] << "\n";
 	ImVec2 cursorPos = ImGui::GetCursorScreenPos();
 	unsigned int textureId = getTextureId();
 	ImGui::Image((ImTextureID)textureId, wsize, ImVec2(0, 1), ImVec2(1, 0));
-	//float x = io.MousePos.x - ImGui::GetCursorScreenPos().x;
-	//td::cout << cursorPos[0] << "\n";
-	//ImVec2 cursorPos = ImGui::GetCursorScreenPos();
-	//ImGuiMouseCallback(cursorPos);
 	ImGui::End();
 	ImGui::PopStyleVar();
 	
+	//render control panel
 	ImGui::Begin("control panel");
 	ImGui::Text("Moi");
 	ImGui::Text("fps %fms", m_fpsinfo.fps);
@@ -420,6 +421,7 @@ void Application::render()
 			if (ImGui::CollapsingHeader("bloom settings")) {
 				ImGui::InputInt("Number of blur iterations", &m_numBloomIterations);
 				ImGui::SliderFloat("bloom threshold", &m_bloomThreshold, 0.2f, 1.5f);
+				ImGui::Image((ImTextureID)m_hdrFBO.getBloomTexture(), ImVec2(100, 100), ImVec2(0, 1), ImVec2(1, 0));
 			}
 		}
 	}
@@ -429,10 +431,20 @@ void Application::render()
 			model.imGuiControls();
 		}
 	}
+	if (ImGui::CollapsingHeader("rtProps")) {
+		ImGui::Checkbox("draw rt-props", &m_drawrtprops);
+		if (m_drawrtprops) {
+			if (ImGui::TreeNode("rt-lights")) {
+				
+			}
+		}
+		ImGui::Text("bvh stuff");
+	}
 	
 	ImGui::End();
 	ImGui::End();
 	
+	//imgui post render
 	ImGui::Render();
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
@@ -481,15 +493,30 @@ void Application::bloomBlur(Shader& shader, int iterations)
 
 void Application::reloadShaders()
 {
-	Shader bl("Shader.vert", "Shader.frag");
+	Shader blingPhongShader("Shader.vert", "Shader.frag");
 	Shader showShadowShader("ShowShadowMap.vert", "ShowShadowMap.frag");
-	m_shaders[0] = bl;
+	m_shaders[0] = blingPhongShader;
 	m_shaders[4] = showShadowShader;
 }
 
 auto Application::getNativeWindow()
 {
 	return glfwGetWin32Window(m_window);
+}
+
+void Application::drawrtLights(const glm::mat4& projection, const glm::mat4& view)
+{
+	//initially just one arealight
+	//later with proper rtLight interface all rtLight
+	glBindVertexArray(threeDqVAO);
+	m_shaders[7].UseProgram();
+	m_shaders[7].setUniformMat4f("projection", projection);
+	m_shaders[7].setUniformMat4f("view", view);
+	glm::mat4 model = m_rtArealight.getModelMatrix();
+	m_shaders[7].setUniformMat4f("model", model);
+	m_shaders[7].setUniformVec3("color", m_rtArealight.getColor());
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+
 }
 
 unsigned int Application::getTextureId()
@@ -555,14 +582,15 @@ void Application::processInput(GLFWwindow* window)
 		//app.saveRTImage("image.ppm");
 		app.m_rtimage.updateTexture();
 	}
-
 	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
 		//show_rt = !show_rt;
 	}
-	
-
 	if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS) {
 		reloadShaders();
+	}
+	if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS) {
+		m_rtArealight.setPosition(m_glcamera.Position);
+		m_rtArealight.setNormal(m_glcamera.Front);
 	}
 
 	app.updateCamera(m_glcamera.Position, m_glcamera.Position + m_glcamera.Front);

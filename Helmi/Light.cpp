@@ -42,7 +42,7 @@ void DirectionalLight::ImGuiControls()
         ImGui::ColorEdit3("diffuse", &diffuse[0]);
         ImGui::ColorEdit3("specular", &specular[0]);
         ImGui::InputFloat("size", &size);
-        ImGui::Checkbox("casts shadows", &castsShadows);
+        ImGui::Checkbox("casts shadows", &castsShadows);        
     }
 }
 
