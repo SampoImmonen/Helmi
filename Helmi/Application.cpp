@@ -435,8 +435,11 @@ void Application::render()
 		ImGui::Checkbox("draw rt-props", &m_drawrtprops);
 		if (m_drawrtprops) {
 			if (ImGui::TreeNode("rt-lights")) {
-				
+				ImGui::Text("moro");
+				ImGui::Separator();
+				ImGui::TreePop();
 			}
+
 		}
 		ImGui::Text("bvh stuff");
 	}

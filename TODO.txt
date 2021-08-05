@@ -1,31 +1,24 @@
 # Todo
 
-
-
 ## application
-1. imgui docking
-2. app gui layout 
-3. editor panel
+1. change control panel settings to treenodes
+
 
 ## opengl
-1. emitting materials
-2. bloom
-3. particle systems
-4. pointlights (no shadows)
+pointlights
+bvh visualization
+shadow map confiqurations and debugging
 
 ## raytrace:
-1. path tracer for diffuse material
+1. path tracer for diffuse material and one arealight
 
 
 #other features:
 1. show shadowmap of a light under light properties
-2. show bloom brightness texture under bloom settings
+2. add and delete lights and models
+3. scene serialization
 
-
-#controllable parameters:
-exposure (fs)
-gamma(fs)
-light properties
-object transforms
-object material
-...
+#other:
+1. reorganized files and update gitignore
+2. ignore visualstudio warnings i dont care about (#ifdef _MSC_VER
+#pragma warning (disable: warning_number) )

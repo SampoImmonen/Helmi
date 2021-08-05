@@ -23,6 +23,9 @@ namespace helmirt {
 
 	glm::vec3 rtAreaLight::sample() const
 	{
+		//sample a random point from the area light
+		//also return pdf value
+		//to be done
 		return glm::vec3();
 	}
 	

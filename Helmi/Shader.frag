@@ -387,7 +387,7 @@ void main()
 	vec3 newNormal = normal;
 	if (material.hasNormal) {
 		newNormal = texture(material.normalMap, texCoords).rgb;
-		newNormal = normalize(normal * 2.0 - 1.0);
+		newNormal = normalize(newNormal * 2.0 - 1.0);
 		newNormal = normalize(TBN * newNormal);
 	}
 	vec3 emission = material.emission;
