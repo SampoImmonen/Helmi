@@ -5,33 +5,33 @@ C:\Users\immon\Documents\graphics\Helmi\Helmi\Helmi\Application.h(75,17): warnin
 C:\Users\immon\Documents\graphics\Helmi\Helmi\Helmi\Application.cpp(263,19): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
 C:\Users\immon\Documents\graphics\Helmi\Helmi\Helmi\Application.cpp(264,20): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
 C:\Users\immon\Documents\graphics\Helmi\Helmi\Helmi\Application.cpp(397,37): warning C4312: 'type cast': conversion from 'unsigned int' to 'ImTextureID' of greater size
-C:\Users\immon\Documents\graphics\Helmi\Helmi\Helmi\Application.cpp(424,57): warning C4312: 'type cast': conversion from 'unsigned int' to 'ImTextureID' of greater size
-C:\Users\immon\Documents\graphics\Helmi\Helmi\Helmi\Application.cpp(480,29): warning C4018: '<': signed/unsigned mismatch
-C:\Users\immon\Documents\graphics\Helmi\Helmi\Helmi\Application.cpp(534,23): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+C:\Users\immon\Documents\graphics\Helmi\Helmi\Helmi\Application.cpp(425,57): warning C4312: 'type cast': conversion from 'unsigned int' to 'ImTextureID' of greater size
+C:\Users\immon\Documents\graphics\Helmi\Helmi\Helmi\Application.cpp(481,29): warning C4018: '<': signed/unsigned mismatch
 C:\Users\immon\Documents\graphics\Helmi\Helmi\Helmi\Application.cpp(535,23): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-C:\Users\immon\Documents\graphics\Helmi\Helmi\Helmi\Application.cpp(539,78): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-C:\Users\immon\Documents\graphics\Helmi\Helmi\Helmi\Application.cpp(539,39): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
-C:\Users\immon\Documents\graphics\Helmi\Helmi\Helmi\Application.cpp(540,22): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+C:\Users\immon\Documents\graphics\Helmi\Helmi\Helmi\Application.cpp(536,23): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+C:\Users\immon\Documents\graphics\Helmi\Helmi\Helmi\Application.cpp(540,78): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\immon\Documents\graphics\Helmi\Helmi\Helmi\Application.cpp(540,39): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
 C:\Users\immon\Documents\graphics\Helmi\Helmi\Helmi\Application.cpp(541,22): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-C:\Users\immon\Documents\graphics\Helmi\Helmi\Helmi\Application.cpp(549,32): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\immon\Documents\graphics\Helmi\Helmi\Helmi\Application.cpp(542,22): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+C:\Users\immon\Documents\graphics\Helmi\Helmi\Helmi\Application.cpp(550,32): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
   Generating code
   1 of 4109 functions (<0.1%) were compiled, the rest were copied from previous compilation.
     0 functions were new in current compilation
     86 functions had inline decision re-evaluated but remain unchanged
   Finished generating code
-Light.obj : warning LNK4020: a type record in 'c:\users\immon\documents\graphics\helmi\helmi\helmi\x64\release\vc142.pdb' is corrupted; some symbols and types may not be accessible from the debugger
-glfw3.lib(context.obj) : warning LNK4020: a type record in 'c:\users\immon\documents\graphics\helmi\helmi\helmi\x64\release\vc142.pdb' is corrupted; some symbols and types may not be accessible from the debugger
-kernel32.lib(KERNEL32.dll) : warning LNK4020: a type record in 'c:\users\immon\documents\graphics\helmi\helmi\helmi\x64\release\vc142.pdb' is corrupted; some symbols and types may not be accessible from the debugger
+CubeMap.obj : warning LNK4020: a type record in 'c:\users\immon\documents\graphics\helmi\helmi\helmi\x64\release\vc142.pdb' is corrupted; some symbols and types may not be accessible from the debugger
+* linker generated manifest res * : warning LNK4020: a type record in 'c:\users\immon\documents\graphics\helmi\helmi\helmi\x64\release\vc142.pdb' is corrupted; some symbols and types may not be accessible from the debugger
+glfw3.lib(wgl_context.obj) : warning LNK4020: a type record in 'c:\users\immon\documents\graphics\helmi\helmi\helmi\x64\release\vc142.pdb' is corrupted; some symbols and types may not be accessible from the debugger
+user32.lib(USER32.dll) : warning LNK4020: a type record in 'c:\users\immon\documents\graphics\helmi\helmi\helmi\x64\release\vc142.pdb' is corrupted; some symbols and types may not be accessible from the debugger
 gdi32.lib(GDI32.dll) : warning LNK4020: a type record in 'c:\users\immon\documents\graphics\helmi\helmi\helmi\x64\release\vc142.pdb' is corrupted; some symbols and types may not be accessible from the debugger
-comdlg32.lib(COMDLG32.dll) : warning LNK4020: a type record in 'c:\users\immon\documents\graphics\helmi\helmi\helmi\x64\release\vc142.pdb' is corrupted; some symbols and types may not be accessible from the debugger
-MSVCRT.lib(amdsecgs.obj) : warning LNK4020: a type record in 'c:\users\immon\documents\graphics\helmi\helmi\helmi\x64\release\vc142.pdb' is corrupted; some symbols and types may not be accessible from the debugger
+shell32.lib(SHELL32.dll) : warning LNK4020: a type record in 'c:\users\immon\documents\graphics\helmi\helmi\helmi\x64\release\vc142.pdb' is corrupted; some symbols and types may not be accessible from the debugger
 MSVCRT.lib(gs_cookie.obj) : warning LNK4020: a type record in 'c:\users\immon\documents\graphics\helmi\helmi\helmi\x64\release\vc142.pdb' is corrupted; some symbols and types may not be accessible from the debugger
-MSVCRT.lib(delete_scalar_size.obj) : warning LNK4020: a type record in 'c:\users\immon\documents\graphics\helmi\helmi\helmi\x64\release\vc142.pdb' is corrupted; some symbols and types may not be accessible from the debugger
-MSVCRT.lib(utility.obj) : warning LNK4020: a type record in 'C:\Users\immon\Documents\graphics\Helmi\Helmi\helmirt\x64\Release\helmirt.pdb' is corrupted; some symbols and types may not be accessible from the debugger
+MSVCRT.lib(new_array.obj) : warning LNK4020: a type record in 'c:\users\immon\documents\graphics\helmi\helmi\helmi\x64\release\vc142.pdb' is corrupted; some symbols and types may not be accessible from the debugger
 MSVCRT.lib(utility_desktop.obj) : warning LNK4020: a type record in 'C:\Users\immon\Documents\graphics\Helmi\Helmi\helmirt\x64\Release\helmirt.pdb' is corrupted; some symbols and types may not be accessible from the debugger
-msvcprt.lib(locale0_implib.obj) : warning LNK4020: a type record in 'c:\users\immon\documents\graphics\helmi\helmi\helmi\x64\release\vc142.pdb' is corrupted; some symbols and types may not be accessible from the debugger
-vcruntime.lib(VCRUNTIME140.dll) : warning LNK4020: a type record in 'c:\users\immon\documents\graphics\helmi\helmi\helmi\x64\release\vc142.pdb' is corrupted; some symbols and types may not be accessible from the debugger
-ucrt.lib(api-ms-win-crt-math-l1-1-0.dll) : warning LNK4020: a type record in 'c:\users\immon\documents\graphics\helmi\helmi\helmi\x64\release\vc142.pdb' is corrupted; some symbols and types may not be accessible from the debugger
+MSVCRT.lib(gshandler.obj) : warning LNK4020: a type record in 'C:\Users\immon\Documents\graphics\Helmi\Helmi\helmirt\x64\Release\helmirt.pdb' is corrupted; some symbols and types may not be accessible from the debugger
+msvcprt.lib(MSVCP140.dll) : warning LNK4020: a type record in 'c:\users\immon\documents\graphics\helmi\helmi\helmi\x64\release\vc142.pdb' is corrupted; some symbols and types may not be accessible from the debugger
+vcruntime.lib(VCRUNTIME140_1.dll) : warning LNK4020: a type record in 'c:\users\immon\documents\graphics\helmi\helmi\helmi\x64\release\vc142.pdb' is corrupted; some symbols and types may not be accessible from the debugger
+ucrt.lib(api-ms-win-crt-runtime-l1-1-0.dll) : warning LNK4020: a type record in 'c:\users\immon\documents\graphics\helmi\helmi\helmi\x64\release\vc142.pdb' is corrupted; some symbols and types may not be accessible from the debugger
 LINK : warning LNK4020: a type record in 'c:\users\immon\documents\graphics\helmi\helmi\helmi\x64\release\vc142.pdb' is corrupted; some symbols and types may not be accessible from the debugger
 LINK : warning LNK4020: a type record in 'c:\users\immon\documents\graphics\helmi\helmi\helmi\x64\release\vc142.pdb' is corrupted; some symbols and types may not be accessible from the debugger
 LINK : warning LNK4020: a type record in 'C:\Users\immon\Documents\graphics\Helmi\Helmi\helmirt\x64\Release\helmirt.pdb' is corrupted; some symbols and types may not be accessible from the debugger

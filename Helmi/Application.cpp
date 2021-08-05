@@ -401,7 +401,7 @@ void Application::render()
 	//render control panel
 	ImGui::Begin("control panel");
 	ImGui::Text("Moi");
-	ImGui::Text("fps %fms", m_fpsinfo.fps);
+	ImGui::Text("frametime: %fms", m_fpsinfo.fps);
 	ImGui::Text("%d", m_height);
 	ImGui::Text("%d", m_width);
 	ImGui::Checkbox("show rtimage", &show_rt);
@@ -421,6 +421,7 @@ void Application::render()
 			if (ImGui::CollapsingHeader("bloom settings")) {
 				ImGui::InputInt("Number of blur iterations", &m_numBloomIterations);
 				ImGui::SliderFloat("bloom threshold", &m_bloomThreshold, 0.2f, 1.5f);
+				ImGui::Text("bloom brightness images");
 				ImGui::Image((ImTextureID)m_hdrFBO.getBloomTexture(), ImVec2(100, 100), ImVec2(0, 1), ImVec2(1, 0));
 			}
 		}

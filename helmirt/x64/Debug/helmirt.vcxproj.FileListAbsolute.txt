@@ -1,2 +1,0 @@
-C:\Users\immon\Documents\graphics\Helmi\Helmi\x64\Debug\helmirt.pdb
-C:\Users\immon\Documents\graphics\Helmi\Helmi\helmirt\x64\Debug\helmirt.pdb
