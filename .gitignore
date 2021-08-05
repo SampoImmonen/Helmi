@@ -13,3 +13,9 @@ Debug/
 /Helmirt/64x/
 /Helmirt/Debug/
 Release/
+models/
+
+*BASE*
+*LOCAL*
+*REMOTE*
+*BACKUP*
