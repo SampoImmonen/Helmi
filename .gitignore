@@ -2,7 +2,10 @@
 *.vs
 *.swp
 
-
+*BASE*
+*LOCAL*
+*REMOTE*
+*BACKUP*
 
 # Directories
 x64/
@@ -15,7 +18,3 @@ Debug/
 Release/
 models/
 
-*BASE*
-*LOCAL*
-*REMOTE*
-*BACKUP*
