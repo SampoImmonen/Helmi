@@ -1,5 +1,6 @@
 #include "Application.h"
 
+//put these where???
 void CheckOpenGLError(const char* stmt, const char* fname, int line)
 {
 	GLenum err = glGetError();
@@ -19,6 +20,7 @@ void CheckOpenGLError(const char* stmt, const char* fname, int line)
 #define GL_CHECK(stmt) stmt
 #endif
 
+//used to render texture quad to screen
 const float quadVertices[] = {
 	// positions   // texCoords
 	-1.0f,  1.0f,  0.0f, 1.0f,
@@ -30,7 +32,7 @@ const float quadVertices[] = {
 	 1.0f,  1.0f,  1.0f, 1.0f
 };
 
-
+//used render rtLights
 const float lightquadVertices[] = {
 	-1.0f, 1.0f, 0.0f,  0.0f, 1.0f,
 	-1.0f, -1.0f, 0.0f,  0.0f, 0.0f,
@@ -41,6 +43,7 @@ const float lightquadVertices[] = {
 	 1.0f, 1.0f, 0.0f,  1.0f, 1.0f
 };
 
+//GLFW wrapper function hack
 void Application::GLFWCallbackWrapper::MouseCallback(GLFWwindow* window, double positionX, double positionY)
 {
 	s_application->mouseCallback(window, positionX, positionY);
@@ -116,21 +119,21 @@ bool Application::loadScene(const std::string& filepath)
 	
 	m_lights.push_back(std::move(ptr));
 	m_lights.push_back(std::move(ptr2));
-	Shader shader("Shader.vert", "Shader.frag"); // 0
+	Shader shader("shaders/BlinnPhongShader.vert", "shaders/BlinnPhongShader.frag"); // 0
 	m_shaders.push_back(shader);
-	Shader skybox("SkyboxShader.vert", "SkyboxShader.frag");
+	Shader skybox("shaders/SkyboxShader.vert", "shaders/SkyboxShader.frag");
 	m_shaders.push_back(skybox);
-	Shader imageShader("ImageShader.vert", "ImageShader.frag");
+	Shader imageShader("shaders/ImageShader.vert", "shaders/ImageShader.frag");
 	m_shaders.push_back(imageShader);
-	Shader shadowShader("ShadowDepthShader.vert", "ShadowDepthShader.frag");
+	Shader shadowShader("shaders/ShadowDepthShader.vert", "shaders/ShadowDepthShader.frag");
 	m_shaders.push_back(shadowShader);
-	Shader showShadowShader("ShowShadowMap.vert", "ShowShadowMap.frag");
+	Shader showShadowShader("shaders/ShowShadowMap.vert", "shaders/ShowShadowMap.frag");
 	m_shaders.push_back(showShadowShader);
-	Shader postProcessingShader("ImageShader.vert", "PostProcessingBasic.frag");
+	Shader postProcessingShader("shaders/ImageShader.vert", "shaders/PostProcessingBasic.frag");
 	m_shaders.push_back(postProcessingShader);
-	Shader bloomBlurShader("ImageShader.vert", "GaussianBlurShader.frag");
+	Shader bloomBlurShader("shaders/ImageShader.vert", "shaders/GaussianBlurShader.frag");
 	m_shaders.push_back(bloomBlurShader);
-	Shader areaLightShader("3DquadShader.vert", "3DquadShader.frag"); // 7
+	Shader areaLightShader("shaders/3DquadShader.vert", "shaders/3DquadShader.frag"); // 7
 	m_shaders.push_back(areaLightShader);
 	//load scene into rtformat
 	initHelmirt();
@@ -149,18 +152,19 @@ void Application::startApplication()
 
 bool Application::loadModel(const std::string& filepath)
 {
+	//in the future used to load and add new models into the scene
 	return false;
 }
 
 void Application::loadNewScene()
 {
+	//opens a file dialog and lets u choose a new model to show (windows file dialog)
 	std::string path = FileHandler::openFilePath();
 	if (!path.empty()) {
 		std::cout << "loading model from: " << path << "\n";
 		m_models[0] = Model(path.c_str());
 	}
-	
-
+	// update rtTriangles as well??
 }
 
 void Application::initApp()
@@ -228,14 +232,16 @@ void Application::initImGui()
 void Application::initHelmirt()
 {
 	//load and transform triangels
-	//currently supports single mesh
+	//currently supports single model
 	app.loadTriangles(m_models[0].trianglesToRT());
 	
-	//transform harcoded at the moment
+	//transform triangles into worldspace
 	glm::mat4 model = glm::mat4(1.0f);
 	model = glm::scale(model, glm::vec3(m_scale));
 	app.m_renderer.transformTriangles(model);
+	// create bvh for the scene
 	app.m_renderer.constructBVH(helmirt::SPATIAL_MEDIAN, 8);
+	//init texture for the raytraced image to render on the screen, this has to be done after opengl has been initialized
 	app.m_rtimage.createTexture();
 }
 
@@ -497,8 +503,8 @@ void Application::bloomBlur(Shader& shader, int iterations)
 
 void Application::reloadShaders()
 {
-	Shader blingPhongShader("Shader.vert", "Shader.frag");
-	Shader showShadowShader("ShowShadowMap.vert", "ShowShadowMap.frag");
+	Shader blingPhongShader("shaders/BlinnPhongShader.vert", "shaders/BlinnPhongShader.frag");
+	Shader showShadowShader("shaders/ShowShadowMap.vert", "shaders/ShowShadowMap.frag");
 	m_shaders[0] = blingPhongShader;
 	m_shaders[4] = showShadowShader;
 }
@@ -552,6 +558,8 @@ void Application::scrollCallback(GLFWwindow* window, double xoffset, double yoff
 
 void Application::framebufferSizeCallback(GLFWwindow* window, int width, int height)
 {
+	//currently not in use because resizing happens according imgui window size!!!
+
 	//m_height = height;
 	//m_width = width;
 	//glViewport(0, 0, m_width, m_height);
@@ -597,6 +605,7 @@ void Application::processInput(GLFWwindow* window)
 		m_rtArealight.setNormal(m_glcamera.Front);
 	}
 
+	//update rtCamera vectors
 	app.updateCamera(m_glcamera.Position, m_glcamera.Position + m_glcamera.Front);
 }
 
