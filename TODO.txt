@@ -5,12 +5,14 @@
 
 
 ## opengl
-pointlights
-bvh visualization
-shadow map confiqurations and debugging
+1. pointlights
+2. bvh visualization
+3. shadow map confiqurations and debugging
+4. skeletal animation
 
 ## raytrace:
-1. path tracer for diffuse material and one arealight
+1. cpu path tracer for diffuse material and one arealight
+2. disney BSDF
 
 
 #other features:
@@ -22,3 +24,6 @@ shadow map confiqurations and debugging
 1. reorganized files and update gitignore
 2. ignore visualstudio warnings i dont care about (#ifdef _MSC_VER
 #pragma warning (disable: warning_number) )
+3. precompiled header
+4. consistant naming of member variables
+
