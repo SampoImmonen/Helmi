@@ -16,16 +16,29 @@
 #include "Camera.h"
 #include "RayhitResult.h"
 #include "Utils.h"
+#include "Random.h"
+#include "rtAreaLight.h"
 
 
 
 namespace helmirt {
 	
+	static float Pi = 3.14159265358979323846;
+	static float invPi = 1 / Pi;
+
 	//modes for bvh node creation
 	enum {
 		SURFACE_AREA_HEURISTIC,
 		SPATIAL_MEDIAN,
 	};
+
+	struct ShadingResult {
+		glm::vec3 diffuse;
+		glm::vec3 specular;
+		glm::vec3 normal;
+		float glossiness;
+	};
+
 
 	class Renderer
 	{
@@ -47,16 +60,20 @@ namespace helmirt {
 		void bvhTraverse(BvhNode* N, const Ray& ray, int& imin, float& tmin, float& umin, float& vmin, const glm::vec3& invD);
 		void printTris();
 
+		ShadingResult getShadingParameters(const RayhitResult& rt);
 
 		//shading methods
 		glm::vec3 headlightShading(const RayhitResult& rt);
 		glm::vec3 normalShading(const RayhitResult& rt);
+		glm::vec3 ambientOcclusionShading(const RayhitResult& rt, const Camera& cam, Random& rng);
+		glm::vec3 whittedRayTracing(const RayhitResult& rt, const Camera& cam, Random& rng, int maxdepth = 3);
 
-
+		rtAreaLight m_arealight;
 	private:
 		std::vector<RTTriangle> m_triangles;
 		Bvh m_bvh;
-
+		unsigned int m_maxWhittedDepth = 3;
+		unsigned int m_numofshadowsrays = 8;
 	};
 
 }

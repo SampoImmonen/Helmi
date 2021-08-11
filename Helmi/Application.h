@@ -21,7 +21,7 @@
 #include "Buffers.h"
 #include "FileHandler.h"
 #include "rtAreaLight.h"
-
+#include "Random.h"
 
 struct ScreenVAO {
 
@@ -126,6 +126,10 @@ private:
 	void render();
 	void update();
 	void bloomBlur(Shader& shader, int iterations);
+	void updateShadowMaps();
+	void renderScene(const glm::mat4& projection, const glm::mat4& view);
+	void renderToScreen();
+	
 
 	//utils
 	void reloadShaders();
@@ -148,6 +152,7 @@ private:
 	FpsInfo m_fpsinfo;
 	SystemInfo m_systeminfo;
 	MouseInfo m_mouseinfo;
+	Random m_rng;
 
 	//scene information
 	std::vector<Shader> m_shaders;
@@ -165,7 +170,7 @@ private:
 
 	//who has responsibility for shadowmaps (ligths???)
 	ShadowMapBuffer m_shadowmap, m_shadowmap2;
-	float m_scale = 1.0f;
+	float m_scale = 5.0f;
 
 	//temporary solution
 	unsigned int qVAO, qVBO;

@@ -5,5 +5,6 @@
 int main() {
 	Application app;
 	app.startApplication();
+	return 0;
 }
 

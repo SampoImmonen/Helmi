@@ -272,6 +272,7 @@ void Application::ImGuiContentResizeCallback(const ImVec2& size)
 		m_fbo.Resize(m_height, m_width);
 		m_hdrFBO.resize(m_height, m_width);
 		m_pingpongBuffer.resize(m_height, m_width);
+		app.m_rtimage.resize(m_height, m_width);
 	}
 }
 
@@ -280,51 +281,13 @@ void Application::render()
 
 	processInput(m_window);
 	//shadow map pass
-	glEnable(GL_CULL_FACE);
-	glCullFace(GL_FRONT);
-	glEnable(GL_DEPTH_TEST);
-	for (int i=0; i < m_lights.size(); ++i){
-		if (!m_lights[i]->castsShadows) continue;
-		m_shaders[3].UseProgram();
-		m_lights[i]->prepareShadowMap(m_shaders[3]);
-		m_models[0].simpleDraw(m_shaders[3]);
-	}
-	//glDisable(GL_CULL_FACE);
-	glCullFace(GL_BACK);
-	
-	//draw scene
-	m_hdrFBO.bind();
-	glEnable(GL_DEPTH_TEST);
-	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	updateShadowMaps();
 
 	glm::mat4 projection = glm::perspective(glm::radians(m_glcamera.Zoom), (float)m_width / m_height, 0.1f, 100.0f);
 	glm::mat4 view = m_glcamera.GetViewMatrix();
+	m_hdrFBO.bind();
 	if (!m_show_shadowmap) {
-		
-		//draw skybox
-		m_skybox.draw(m_shaders[1], projection, view);
-		//draw models
-		m_shaders[0].UseProgram();
-		m_lights[0]->setUniforms(m_shaders[0]);
-		m_lights[1]->setUniforms(m_shaders[0]);
-		//m_shaders[0].setUniform1f("exposure", exposure);
-		m_shaders[0].setUniformMat4f("lightSpaceMatrixDirLight", m_lights[0]->getLightSpaceMatrix());
-		m_shaders[0].setUniformMat4f("lightSpaceMatrixSpotLight", m_lights[1]->getLightSpaceMatrix());
-		//m_shadowmap.bindDepthTexture(3);
-		//m_shaders[0].setUniformMat4f("lightSpaceMatrixSpotLight", m_lights[1]->getLightSpaceMatrix());
-		//m_shaders[0].setUniformMat4f("model", model);
-		m_shaders[0].setUniformMat4f("projection", projection);
-		m_shaders[0].setUniformMat4f("view", view);
-		m_shaders[0].setUniformVec3("viewPos", m_glcamera.Position);
-		m_shaders[0].setUniform1f("bloomThreshold", m_bloomThreshold);
-		//m_shaders[0].setUniformInt("shadowMap", 3);
-		//m_shadowmap.bindDepthTexture(3);
-		m_models[0].Draw(m_shaders[0]);
-		if (m_drawrtprops) {
-			glDisable(GL_CULL_FACE);
-			drawrtLights(projection, view);
-		}
+		renderScene(projection, view);
 	}
 	if (m_show_shadowmap) {
 		m_shaders[4].UseProgram();
@@ -335,34 +298,15 @@ void Application::render()
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 	}
 	m_hdrFBO.unbind();
-
-	//glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT);
-
 	//blurring if bloom enabled
 	if (m_bloomOn) {
 		bloomBlur(m_shaders[6], m_numBloomIterations);
 	}
-	//glClear(GL_COLOR_BUFFER_BIT);
-	//post processing
-	m_fbo.bind();
-	m_shaders[5].UseProgram();
-	m_shaders[5].setUniform1f("exposure", exposure);
-	glBindVertexArray(qVAO);
-	glDisable(GL_DEPTH_TEST);
-	m_shaders[5].setUniformInt("screenTexture", 0);
-	m_hdrFBO.bindTextures();
-	m_shaders[5].setUniformInt("bloomOn", m_bloomOn);
-	if (m_bloomOn) {
-		m_shaders[5].setUniformInt("bloomBlur", 1);
-		m_pingpongBuffer.bindTexture(0, 1);
-	}
-	//m_pingpongBuffer.bindTexture(0);
-	glDrawArrays(GL_TRIANGLES, 0, 6);
-	m_fbo.unbind();
+	//post processing and render scene texture to screen
+	renderToScreen();
 
 
+	//Imgui
 	//render pre render
 	ImGui_ImplOpenGL3_NewFrame();
 	ImGui_ImplGlfw_NewFrame();
@@ -444,6 +388,9 @@ void Application::render()
 			if (ImGui::TreeNode("rt-lights")) {
 				ImGui::Text("moro");
 				ImGui::Separator();
+				ImGui::SliderFloat3("area light pos", &m_rtArealight.m_position[0], -5.0f, 5.0f);
+				ImGui::SliderFloat3("area light normal", &m_rtArealight.m_normal[0], -5.0f, 5.0f);
+				ImGui::SliderFloat2("area light size", &m_rtArealight.m_size[0], 0.3f, 5.0f);
 				ImGui::TreePop();
 			}
 
@@ -501,6 +448,72 @@ void Application::bloomBlur(Shader& shader, int iterations)
 	}
 }
 
+void Application::updateShadowMaps()
+{
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_FRONT);
+	glEnable(GL_DEPTH_TEST);
+	for (int i = 0; i < m_lights.size(); ++i) {
+		if (!m_lights[i]->castsShadows) continue;
+		m_shaders[3].UseProgram();
+		m_lights[i]->prepareShadowMap(m_shaders[3]);
+		m_models[0].simpleDraw(m_shaders[3]);
+	}
+	//glDisable(GL_CULL_FACE);
+	glCullFace(GL_BACK);
+}
+
+void Application::renderScene(const glm::mat4& projection, const glm::mat4& view)
+{
+	m_hdrFBO.bind();
+	glEnable(GL_DEPTH_TEST);
+	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	//draw skybox
+	m_skybox.draw(m_shaders[1], projection, view);
+	//draw models
+	m_shaders[0].UseProgram();
+	m_lights[0]->setUniforms(m_shaders[0]);
+	m_lights[1]->setUniforms(m_shaders[0]);
+	//m_shaders[0].setUniform1f("exposure", exposure);
+	m_shaders[0].setUniformMat4f("lightSpaceMatrixDirLight", m_lights[0]->getLightSpaceMatrix());
+	m_shaders[0].setUniformMat4f("lightSpaceMatrixSpotLight", m_lights[1]->getLightSpaceMatrix());
+	//m_shadowmap.bindDepthTexture(3);
+	//m_shaders[0].setUniformMat4f("lightSpaceMatrixSpotLight", m_lights[1]->getLightSpaceMatrix());
+	//m_shaders[0].setUniformMat4f("model", model);
+	m_shaders[0].setUniformMat4f("projection", projection);
+	m_shaders[0].setUniformMat4f("view", view);
+	m_shaders[0].setUniformVec3("viewPos", m_glcamera.Position);
+	m_shaders[0].setUniform1f("bloomThreshold", m_bloomThreshold);
+	//m_shaders[0].setUniformInt("shadowMap", 3);
+	//m_shadowmap.bindDepthTexture(3);
+	m_models[0].Draw(m_shaders[0]);
+	if (m_drawrtprops) {
+		//glDisable(GL_CULL_FACE);
+		drawrtLights(projection, view);
+	}
+}
+
+void Application::renderToScreen()
+{
+	m_fbo.bind();
+	m_shaders[5].UseProgram();
+	m_shaders[5].setUniform1f("exposure", exposure);
+	glBindVertexArray(qVAO);
+	glDisable(GL_DEPTH_TEST);
+	m_shaders[5].setUniformInt("screenTexture", 0);
+	m_hdrFBO.bindTextures();
+	m_shaders[5].setUniformInt("bloomOn", m_bloomOn);
+	if (m_bloomOn) {
+		m_shaders[5].setUniformInt("bloomBlur", 1);
+		m_pingpongBuffer.bindTexture(0, 1);
+	}
+	//m_pingpongBuffer.bindTexture(0);
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+	m_fbo.unbind();
+}
+
 void Application::reloadShaders()
 {
 	Shader blingPhongShader("shaders/BlinnPhongShader.vert", "shaders/BlinnPhongShader.frag");
@@ -522,6 +535,7 @@ void Application::drawrtLights(const glm::mat4& projection, const glm::mat4& vie
 	m_shaders[7].UseProgram();
 	m_shaders[7].setUniformMat4f("projection", projection);
 	m_shaders[7].setUniformMat4f("view", view);
+	m_rtArealight.calculateModelMatrix();
 	glm::mat4 model = m_rtArealight.getModelMatrix();
 	m_shaders[7].setUniformMat4f("model", model);
 	m_shaders[7].setUniformVec3("color", m_rtArealight.getColor());
@@ -590,7 +604,12 @@ void Application::processInput(GLFWwindow* window)
 	}
 	if (glfwGetKey(window, GLFW_KEY_ENTER) == GLFW_PRESS) {
 		std::cout << "TraceRay\n";
+		app.m_renderer.m_arealight.setNormal(m_rtArealight.m_normal);
+		app.m_renderer.m_arealight.setPosition(m_rtArealight.m_position);
+		app.m_renderer.m_arealight.calculateModelMatrix();
 		app.renderRT();
+		glm::vec3 v(1.0f);
+		std::cout << v.length() << "\n";
 		//app.saveRTImage("image.ppm");
 		app.m_rtimage.updateTexture();
 	}
@@ -603,6 +622,13 @@ void Application::processInput(GLFWwindow* window)
 	if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS) {
 		m_rtArealight.setPosition(m_glcamera.Position);
 		m_rtArealight.setNormal(m_glcamera.Front);
+		m_rtArealight.calculateModelMatrix();
+	}
+	if (glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS){
+		float pdf;
+		glm::vec3 point;
+		m_rtArealight.sample(pdf, point, m_rng);
+		std::cout << point[0] << " " << point[1] << " " << point[2] << "\n";
 	}
 
 	//update rtCamera vectors

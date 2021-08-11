@@ -19,7 +19,7 @@ namespace helmirt {
 		glm::vec3 origin() { return orig; }
 		glm::vec3 direction() { return dir; }
 
-		glm::dvec3 at(float t) const {
+		glm::vec3 at(float t) const {
 			return orig + t * dir;
 		}
 	};

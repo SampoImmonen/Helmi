@@ -46,6 +46,7 @@ namespace helmirt {
 			updateVectors();
 		}
 
+		glm::vec3 getPosition() const { return m_origin; }
 
 	private:
 

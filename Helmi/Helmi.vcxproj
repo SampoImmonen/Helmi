@@ -123,6 +123,7 @@
       <PreprocessorDefinitions>MODELS=R"($(SolutionDir)Models\)"</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)Dependencies\ASSIMP\include;$(SolutionDir)Dependencies\GLAD;$(SolutionDir)Dependencies\GLFW\include;$(SolutionDir)Dependencies\imgui;$(SolutionDir)helmirt\Dependencies\glm;$(SolutionDir)helmirt</AdditionalIncludeDirectories>
+      <OpenMPSupport>true</OpenMPSupport>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -138,6 +139,7 @@
       <PreprocessorDefinitions>MODELS=R"($(SolutionDir)Models\)"</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)Dependencies\ASSIMP\include;$(SolutionDir)Dependencies\GLAD;$(SolutionDir)Dependencies\GLFW\include;$(SolutionDir)Dependencies\imgui;$(SolutionDir)helmirt\Dependencies\glm;$(SolutionDir)helmirt</AdditionalIncludeDirectories>
+      <OpenMPSupport>true</OpenMPSupport>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -155,6 +157,7 @@
       <PreprocessorDefinitions>MODELS=R"($(SolutionDir)Models\)"</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)Dependencies\ASSIMP\include;$(SolutionDir)Dependencies\GLAD;$(SolutionDir)Dependencies\GLFW\include;$(SolutionDir)Dependencies\imgui;$(SolutionDir)helmirt\Dependencies\glm;$(SolutionDir)helmirt</AdditionalIncludeDirectories>
+      <OpenMPSupport>true</OpenMPSupport>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -174,6 +177,7 @@
       <PreprocessorDefinitions>MODELS=R"($(SolutionDir)Models\)"</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)Dependencies\ASSIMP\include;$(SolutionDir)Dependencies\GLAD;$(SolutionDir)Dependencies\GLFW\include;$(SolutionDir)Dependencies\imgui;$(SolutionDir)helmirt\Dependencies\glm;$(SolutionDir)helmirt</AdditionalIncludeDirectories>
+      <OpenMPSupport>true</OpenMPSupport>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -193,6 +197,7 @@
       <PreprocessorDefinitions>MODELS=R"($(SolutionDir)Models\)"</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)Dependencies\ASSIMP\include;$(SolutionDir)Dependencies\GLAD;$(SolutionDir)Dependencies\GLFW\include;$(SolutionDir)Dependencies\imgui;$(SolutionDir)helmirt\Dependencies\glm;$(SolutionDir)helmirt</AdditionalIncludeDirectories>
+      <OpenMPSupport>true</OpenMPSupport>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -212,6 +217,7 @@
       <PreprocessorDefinitions>MODELS=R"($(SolutionDir)Models\)"</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)Dependencies\ASSIMP\include;$(SolutionDir)Dependencies\GLAD;$(SolutionDir)Dependencies\GLFW\include;$(SolutionDir)Dependencies\imgui;$(SolutionDir)helmirt\Dependencies\glm;$(SolutionDir)helmirt</AdditionalIncludeDirectories>
+      <OpenMPSupport>true</OpenMPSupport>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

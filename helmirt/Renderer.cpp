@@ -28,6 +28,35 @@ namespace helmirt {
 		return glm::ivec2(u, v);
 	}
 
+
+	//calculate orientation matrix around normal vector
+	inline glm::mat3 formBasis(const glm::vec3& normal) {
+		glm::vec3 q = normal;
+		int minIndex = 0;
+		if (abs(q[1]) < abs(q[minIndex])) minIndex = 1;
+		if (abs(q[2]) < abs(q[minIndex])) minIndex = 2;
+		q[minIndex] = 1.0f;
+
+		glm::mat3 OrtMatrix;
+		OrtMatrix[2] = normal;
+		glm::vec3 t = glm::normalize(glm::cross(q, normal));
+		OrtMatrix[0] = t;
+		OrtMatrix[1] = glm::normalize(glm::cross(normal, t));
+		return OrtMatrix;
+	}
+
+	inline glm::vec3 cosineSampleHemisphere() {
+		return glm::vec3();
+	}
+
+	inline glm::vec3 rejectionCosineSampleHemisphere(Random& rng) {
+		glm::vec2 vec;
+		do {
+			vec = rng.getVec2();
+		} while (vec.x * vec.x + vec.y * vec.y > 1.0f);
+		return glm::vec3(vec.x, vec.y, std::sqrt(1 - vec.x * vec.x - vec.y * vec.y));
+	}
+
 	BoundingBox combineBoundingBoxes(const BoundingBox& bb_1, const BoundingBox& bb_2) {
 		//create a bounding box for two bounding boxes
 		glm::vec3 min(std::min(bb_1.min.x, bb_2.min.x), std::min(bb_1.min.y, bb_2.min.y), std::min(bb_1.min.z, bb_2.min.z));
@@ -412,7 +441,10 @@ namespace helmirt {
 
 		#pragma omp parallel for
 		for (int j = 0; j < height; ++j) {
+			Random rng;
 			for (int i = 0; i < width; ++i) {
+
+				
 
 				auto u = float(i) / (width - 1);
 				auto v = float(j) / (height - 1);
@@ -423,8 +455,10 @@ namespace helmirt {
 
 				glm::vec3 color = glm::vec3(0.1f, 0.7f, 0.1f);
 				if (result.tri != nullptr) {
-					color = headlightShading(result);
+					//color = headlightShading(result);
 					//color = normalShading(result);
+					//color = ambientOcclusionShading(result, cam, rng);
+					color = whittedRayTracing(result, cam, rng);
 				}
 
 				image.setColor(i, j, color);
@@ -470,18 +504,17 @@ namespace helmirt {
 		}
 	}
 
-	glm::vec3 helmirt::Renderer::headlightShading(const RayhitResult& rt)
+	ShadingResult Renderer::getShadingParameters(const RayhitResult& rt)
 	{
 		glm::vec3 n = rt.tri->m_normal;
-		//make methods to get these properties!!!!
 		glm::vec3 diffuse = rt.tri->m_material->diffuse;
-		
-		//get uv coords
+		glm::vec3 specular = rt.tri->m_material->specular;
+		float glossiness = rt.tri->m_material->glossiness;
+
 		float u = rt.u;
 		float v = rt.v;
 		glm::vec2 uv = (1 - u - v) * rt.tri->m_txCoordinates[0] + u * rt.tri->m_txCoordinates[1] + v * rt.tri->m_txCoordinates[2];
-		
-		
+
 		//currently using nearest pixel sampling
 		if (rt.tri->hasTextureType(normalTexture)) {
 			glm::ivec2 txCoords = getTexelCoords(uv, rt.tri->m_material->normal_map->getSize());
@@ -495,14 +528,77 @@ namespace helmirt {
 			glm::ivec2 txCoords = getTexelCoords(uv, rt.tri->m_material->diffuse_map->getSize());
 			diffuse = rt.tri->m_material->diffuse_map->getPixel(txCoords[0], txCoords[1]);
 		}
+		ShadingResult r;
+		r.diffuse = diffuse;
+		r.specular = specular;
+		r.normal = n;
+		r.glossiness = glossiness;
+		return r;
+	}
 
-		float d = std::abs(glm::dot(n, glm::normalize(rt.point - rt.ray.orig)));
-		return d * diffuse;
+	glm::vec3 helmirt::Renderer::headlightShading(const RayhitResult& rt)
+	{
+		ShadingResult r = getShadingParameters(rt);
+		float d = std::abs(glm::dot(r.normal, glm::normalize(rt.point - rt.ray.orig)));
+		return d * r.diffuse;
 	}
 
 	glm::vec3 Renderer::normalShading(const RayhitResult& rt)
 	{
 		return rt.tri->m_normal;
+	}
+
+	glm::vec3 Renderer::ambientOcclusionShading(const RayhitResult& rt, const Camera& cam, Random& rng)
+	{
+		glm::vec3 n = rt.tri->m_normal;
+		//flip normal of on the other side of hitpoint
+		glm::vec3 towardsCam = glm::normalize((cam.getPosition()-rt.point));
+		if (glm::dot(towardsCam, n) < 0.0f) n = -n;
+
+		glm::vec3 rayorigin = rt.point + 0.0001f * towardsCam;
+		int numAOrays = 16;
+		float AOmindistance = 0.3f;
+		glm::mat3 ortMat = formBasis(n);
+		int hits = 0;
+		for (int i = 0; i < numAOrays; ++i) {
+			glm::vec3 randomDirection = rejectionCosineSampleHemisphere(rng);
+			glm::vec3 Wo = glm::normalize(ortMat * randomDirection);
+			RayhitResult rtAO = rayTrace(Ray(rayorigin, Wo));
+			if (rtAO.t > AOmindistance) {
+				hits += 1;
+			}
+		}
+		return glm::vec3((float)hits / (float)numAOrays);
+	}
+
+	glm::vec3 Renderer::whittedRayTracing(const RayhitResult& rt, const Camera& cam, Random& rng ,int maxdepth)
+	{
+		ShadingResult r = getShadingParameters(rt);
+		glm::vec3 n = rt.tri->m_normal;
+		//flip normal of on the other side of hitpoint
+		glm::vec3 towardsCam = glm::normalize((cam.getPosition() - rt.point));
+		if (glm::dot(towardsCam, n) < 0.0f) n = -n;
+		float shadow = 0.0f, pdf;
+		glm::vec3 point;
+		glm::vec3 rayOrig = rt.point + n * 0.0001f;
+
+		//reflection and refraction??
+		for (unsigned int i = 0; i < m_numofshadowsrays; ++i) {
+			m_arealight.sample(pdf, point, rng);
+			glm::vec3 shadowRayDir = point - rayOrig;
+			float raylen = glm::length(shadowRayDir);
+			if (glm::dot(shadowRayDir, m_arealight.m_normal) > 0.0f) {
+				shadow += 1.0f;
+				continue;
+			}
+			RayhitResult shadowrayrt = rayTrace(Ray(rayOrig, glm::normalize(shadowRayDir)));
+			if ((shadowrayrt.t < raylen-0.00001f) && shadowrayrt.tri!=nullptr) {
+				shadow += 1.0f;
+			}
+		}
+
+		//blinnphong
+		return glm::vec3(1.0f-shadow/m_numofshadowsrays);
 	}
 
 }

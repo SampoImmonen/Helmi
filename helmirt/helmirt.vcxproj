@@ -146,6 +146,7 @@
     <ClInclude Include="App.h" />
     <ClInclude Include="Bvh.h" />
     <ClInclude Include="Camera.h" />
+    <ClInclude Include="Random.h" />
     <ClInclude Include="Ray.h" />
     <ClInclude Include="RayhitResult.h" />
     <ClInclude Include="Renderer.h" />
@@ -159,6 +160,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="App.cpp" />
+    <ClCompile Include="Random.cpp" />
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="rtAreaLight.cpp" />
     <ClCompile Include="RTImage.cpp" />

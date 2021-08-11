@@ -36,9 +36,14 @@ namespace helmirt {
 		inline glm::vec3 centroid() {
 			return 0.5f * max + 0.5f * min;
 		}
-
 	};
 
+
+	enum class SurfaceType {
+		opaque = 1,
+		reflective,
+		refraction
+	};
 
 	struct CMaterial {
 
@@ -58,6 +63,9 @@ namespace helmirt {
 		//textures
 		std::shared_ptr<rtTexture2D> diffuse_map = nullptr;
 		std::shared_ptr<rtTexture2D> normal_map = nullptr;
+
+		//surface type for whitted integration
+		SurfaceType surfacetype = SurfaceType::opaque;
 
 		CMaterial() {
 			ambient = glm::vec3(0.0f);
