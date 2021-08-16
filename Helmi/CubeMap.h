@@ -9,7 +9,7 @@
 #include "Shader.h"
 
 
-
+//cubemap to draw environment maps
 class CubeMap
 {
 private:
@@ -21,6 +21,23 @@ public:
 	CubeMap(){}
 	CubeMap(const std::string& dir);
 	void bind();
-	void draw(Shader shader, glm::mat4 projection, glm::mat4 view);
+	void draw(Shader& shader, const glm::mat4& projection, const glm::mat4& view);
+};
+
+//used for pointlight shadow mapping
+class DepthCubeMapFBO {
+public:
+	DepthCubeMapFBO() = default;
+	DepthCubeMapFBO(int width, int height);
+	void bind();
+	void unbind();
+	void bindDepthTexture(int unit);
+	int getHeight() const { return m_height; }
+	int getWidth() const { return m_width; }
+
+
+private:
+	unsigned int m_textureId, m_fboId;
+	int m_width, m_height;
 };
 

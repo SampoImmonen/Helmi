@@ -63,6 +63,7 @@ namespace helmirt {
 		//textures
 		std::shared_ptr<rtTexture2D> diffuse_map = nullptr;
 		std::shared_ptr<rtTexture2D> normal_map = nullptr;
+		std::shared_ptr<rtTexture2D> specular_map = nullptr;
 
 		//surface type for whitted integration
 		SurfaceType surfacetype = SurfaceType::opaque;

@@ -112,6 +112,8 @@ namespace helmirt{
 			return m_material->diffuse_map != nullptr;
 		case normalTexture:
 			return m_material->normal_map != nullptr;
+		case specularTexture:
+			return m_material->specular_map != nullptr;
 		}
 	}
 

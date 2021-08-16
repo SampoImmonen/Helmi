@@ -7,6 +7,7 @@
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
 #include "Buffers.h"
+#include "CubeMap.h"
 
 enum class LightType {
 	DirectionalLight,
@@ -81,4 +82,24 @@ private:
 	//cutoff angles in degrees
 	float m_cutOff = 25.5f, m_outerCutOff=27.5f;
 	float m_constant=1.0f, m_linear=0.0f, m_quadratic=0.0f;
+};
+
+class PointLight : public Light {
+public:
+	PointLight() {};
+	PointLight(const glm::vec3& position);
+	void setUniforms(Shader& shader) override;
+	void update(float ts) override;
+	glm::mat4 getLightSpaceMatrix(float scale = 1.0f) override;
+	void ImGuiControls() override;
+	void prepareShadowMap(Shader& shader, float scale = 1.0f) override;
+	void bindShadowMapTexture(int unit) override;
+	virtual void bindShadowMap() override;
+	virtual void unbindShadowMap() override;
+private:
+	glm::vec3 m_position = glm::vec3(0.0f, 1.0f, 0.0f);
+	//attenuation factors
+	float m_constant = 1.0f, m_linear = 1.5f, m_quadratic = 0.0f;
+	DepthCubeMapFBO m_shadowMap;
+	float m_near = 1.0f, m_far = 25.0f;
 };

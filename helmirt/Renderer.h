@@ -73,7 +73,7 @@ namespace helmirt {
 		std::vector<RTTriangle> m_triangles;
 		Bvh m_bvh;
 		unsigned int m_maxWhittedDepth = 3;
-		unsigned int m_numofshadowsrays = 8;
+		unsigned int m_numofshadowsrays = 64;
 	};
 
 }

@@ -528,6 +528,11 @@ namespace helmirt {
 			glm::ivec2 txCoords = getTexelCoords(uv, rt.tri->m_material->diffuse_map->getSize());
 			diffuse = rt.tri->m_material->diffuse_map->getPixel(txCoords[0], txCoords[1]);
 		}
+
+		if (rt.tri->hasTextureType(specularTexture)) {
+			glm::ivec2 txCoords = getTexelCoords(uv, rt.tri->m_material->specular_map->getSize());
+			specular = rt.tri->m_material->specular_map->getPixel(txCoords[0], txCoords[1]);
+		}
 		ShadingResult r;
 		r.diffuse = diffuse;
 		r.specular = specular;
@@ -555,24 +560,26 @@ namespace helmirt {
 		glm::vec3 towardsCam = glm::normalize((cam.getPosition()-rt.point));
 		if (glm::dot(towardsCam, n) < 0.0f) n = -n;
 
-		glm::vec3 rayorigin = rt.point + 0.0001f * towardsCam;
+		glm::vec3 rayorigin = rt.point + 0.001f * towardsCam;
 		int numAOrays = 16;
-		float AOmindistance = 0.3f;
-		glm::mat3 ortMat = formBasis(n);
+		float AOmindistance = 2.0f;
+		glm::mat3 ortMat = formBasis(glm::normalize(n));
 		int hits = 0;
 		for (int i = 0; i < numAOrays; ++i) {
 			glm::vec3 randomDirection = rejectionCosineSampleHemisphere(rng);
 			glm::vec3 Wo = glm::normalize(ortMat * randomDirection);
 			RayhitResult rtAO = rayTrace(Ray(rayorigin, Wo));
-			if (rtAO.t > AOmindistance) {
+			if ((rtAO.t < AOmindistance) && (rtAO.tri!=nullptr)) {
 				hits += 1;
 			}
 		}
-		return glm::vec3((float)hits / (float)numAOrays);
+		return glm::vec3((float)(numAOrays-hits) / (float)numAOrays);
 	}
 
 	glm::vec3 Renderer::whittedRayTracing(const RayhitResult& rt, const Camera& cam, Random& rng ,int maxdepth)
 	{
+		//generalize with different type of lights and reflections and refractions
+		
 		ShadingResult r = getShadingParameters(rt);
 		glm::vec3 n = rt.tri->m_normal;
 		//flip normal of on the other side of hitpoint
@@ -582,7 +589,7 @@ namespace helmirt {
 		glm::vec3 point;
 		glm::vec3 rayOrig = rt.point + n * 0.0001f;
 
-		//reflection and refraction??
+		//estimate shadows from area light by sampling
 		for (unsigned int i = 0; i < m_numofshadowsrays; ++i) {
 			m_arealight.sample(pdf, point, rng);
 			glm::vec3 shadowRayDir = point - rayOrig;
@@ -596,9 +603,13 @@ namespace helmirt {
 				shadow += 1.0f;
 			}
 		}
+		glm::vec3 L = glm::normalize(m_arealight.getPosition() - rt.point);
+		glm::vec3 H = glm::normalize(L - glm::normalize(rt.ray.dir));
+		glm::vec3 diffuse = r.diffuse * std::max(0.0f, glm::dot(r.normal, L));
+		glm::vec3 specular = r.specular * std::pow(std::max(0.0f, glm::dot(r.normal, H)), r.glossiness);
 
 		//blinnphong
-		return glm::vec3(1.0f-shadow/m_numofshadowsrays);
+		return (1.0f - shadow / m_numofshadowsrays) * (diffuse + specular)+0.2f*r.diffuse;
 	}
 
 }

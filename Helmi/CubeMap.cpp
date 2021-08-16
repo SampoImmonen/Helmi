@@ -98,7 +98,7 @@ void CubeMap::bind()
 
 }
 
-void CubeMap::draw(Shader shader, glm::mat4 projection, glm::mat4 view)
+void CubeMap::draw(Shader& shader, const glm::mat4& projection, const glm::mat4& view)
 {
 	glDepthMask(GL_FALSE);
 	shader.UseProgram();
@@ -110,4 +110,44 @@ void CubeMap::draw(Shader shader, glm::mat4 projection, glm::mat4 view)
 	glDrawArrays(GL_TRIANGLES, 0, 36);
 	glDepthMask(GL_TRUE);
 
+}
+
+DepthCubeMapFBO::DepthCubeMapFBO(int width, int height): m_width(width), m_height(height)
+{
+	glGenFramebuffers(1, &m_fboId);
+	glGenTextures(1, &m_textureId);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, m_textureId);
+	for (unsigned int i = 0; i < 6; ++i) {
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_DEPTH_COMPONENT,
+			m_width, m_height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+
+	}
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+	glBindFramebuffer(GL_FRAMEBUFFER, m_fboId);
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, m_textureId, 0);
+	glDrawBuffer(GL_NONE);
+	glReadBuffer(GL_NONE);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+}
+
+void DepthCubeMapFBO::bind()
+{
+	glViewport(0, 0, m_width, m_height);
+	glBindFramebuffer(GL_FRAMEBUFFER, m_fboId);
+	glClear(GL_DEPTH_BUFFER_BIT);
+}
+
+void DepthCubeMapFBO::unbind()
+{
+}
+
+void DepthCubeMapFBO::bindDepthTexture(int unit)
+{
+	glActiveTexture(GL_TEXTURE0 + unit);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, m_textureId);
 }

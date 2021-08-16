@@ -164,4 +164,96 @@ float SpotLight::getFarPlane(float scale)
     return 100.0f;
 }
 
+PointLight::PointLight(const glm::vec3& position)
+{
+    type = LightType::PointLight;
+    m_shadowMap = DepthCubeMapFBO(1024, 1024);
+}
 
+void PointLight::setUniforms(Shader& shader)
+{
+    shader.UseProgram();
+    shader.setUniformVec3("pointLight.position", m_position);
+    shader.setUniformVec3("pointLight.ambient", ambient);
+    shader.setUniformVec3("pointLight.diffuse", diffuse);
+    shader.setUniformVec3("pointLight.specular", specular);
+
+    shader.setUniform1f("pointLight.constant", m_constant);
+    shader.setUniform1f("pointLight.linear", m_linear);
+    shader.setUniform1f("pointLight.quadratic", m_quadratic);
+
+    shader.setUniformInt("pointLight.castShadows", castsShadows);
+    shader.setUniform1f("pointLight.far_plane", m_far);
+    shader.setUniformInt("pointLight.shadowMap", 6);
+    m_shadowMap.bindDepthTexture(6);
+
+}
+
+void PointLight::update(float ts)
+{
+}
+
+glm::mat4 PointLight::getLightSpaceMatrix(float scale)
+{
+    return glm::mat4();
+}
+
+void PointLight::ImGuiControls()
+{
+    if (ImGui::CollapsingHeader("PointLight")) {
+        //position and direction
+        ImGui::SliderFloat3("position", &m_position[0], -10.0f, 10.0f);
+    
+        //colors
+        ImGui::ColorEdit3("ambient", &ambient[0]);
+        ImGui::ColorEdit3("diffuse", &diffuse[0]);
+        ImGui::ColorEdit3("specular", &specular[0]);
+
+        ImGui::SliderFloat("constant", &m_constant, 0.1f, 10.0f);
+        ImGui::SliderFloat("linear", &m_linear, 0.0f, 5.0f);
+        ImGui::SliderFloat("quadratic", &m_quadratic, 0.0f, 5.0f);
+
+        ImGui::Checkbox("casts shadows", &castsShadows);
+    }
+}
+
+void PointLight::prepareShadowMap(Shader& shader, float scale)
+{
+    //set pointlight shadow map shader uniforms
+    shader.UseProgram();
+    float aspectratio = (float)m_shadowMap.getWidth() / (float)m_shadowMap.getHeight();
+    glm::mat4 shadowproj = glm::perspective(glm::radians(90.0f), aspectratio, m_near, m_far);
+    std::vector<glm::mat4> shadowTransforms;
+    shadowTransforms.reserve(6);
+    shadowTransforms.push_back(shadowproj *
+        glm::lookAt(m_position, m_position + glm::vec3(1.0, 0.0, 0.0), glm::vec3(0.0, -1.0, 0.0)));
+    shadowTransforms.push_back(shadowproj *
+        glm::lookAt(m_position, m_position + glm::vec3(-1.0, 0.0, 0.0), glm::vec3(0.0, -1.0, 0.0)));
+    shadowTransforms.push_back(shadowproj *
+        glm::lookAt(m_position, m_position + glm::vec3(0.0, 1.0, 0.0), glm::vec3(0.0, 0.0, 1.0)));
+    shadowTransforms.push_back(shadowproj *
+        glm::lookAt(m_position, m_position + glm::vec3(0.0, -1.0, 0.0), glm::vec3(0.0, 0.0, -1.0)));
+    shadowTransforms.push_back(shadowproj *
+        glm::lookAt(m_position, m_position + glm::vec3(0.0, 0.0, 1.0), glm::vec3(0.0, -1.0, 0.0)));
+    shadowTransforms.push_back(shadowproj *
+        glm::lookAt(m_position, m_position + glm::vec3(0.0, 0.0, -1.0), glm::vec3(0.0, -1.0, 0.0)));
+    //set uniforms
+    for (unsigned int i = 0; i < 6; ++i) {
+        shader.setUniformMat4f(("shadowMatrices[" + std::to_string(i) + "]").c_str(), shadowTransforms[i]);
+    }
+    shader.setUniformVec3("lightPos", m_position);
+    shader.setUniform1f("far_plane", m_far);
+    m_shadowMap.bind();
+}
+
+void PointLight::bindShadowMapTexture(int unit)
+{
+}
+
+void PointLight::bindShadowMap()
+{
+}
+
+void PointLight::unbindShadowMap()
+{
+}

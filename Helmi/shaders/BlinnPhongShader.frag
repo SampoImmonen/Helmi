@@ -133,7 +133,8 @@ struct PointLight {
 
 	float size;
 	bool castShadows;
-	sampler2D shadowMap;
+	samplerCube shadowMap;
+	float far_plane;
 };
 
 
@@ -171,11 +172,21 @@ struct SpotLight {
 
 uniform SpotLight spotLight;
 uniform DirLight dirLight;
-//uniform PointLight pointLight;
+uniform PointLight pointLight;
 
 uniform Material material;
-uniform Light light;
+//uniform Light light;
 uniform float exposure;
+
+
+float PointLightShadowCalculation(PointLight light, float bias) {
+	vec3 fragToLight = fragPos - light.position;
+	float closestDepth = texture(light.shadowMap, fragToLight).r;
+	closestDepth *= light.far_plane;
+	float currentDepth = length(fragToLight);
+	float shadow = currentDepth - bias > closestDepth ? 1.0 : 0.0;
+	return shadow;
+}
 
 float ShadowCalculationPoisson(vec4 fragPosLightSpace, float bias, sampler2D shadowMap) {
 	vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
@@ -328,7 +339,6 @@ vec3 calcDirectionalLight(DirLight light, vec3 inormal, vec3 viewPos) {
 	float shadow = 0.0;
 	if (light.castShadows){
 		float bias = max(0.05 * (1.0 - dot(inormal, lightDir)), 0.005);
-		bias = 
 		//bias = 0.0002;
 		shadow = PCSSDirectionalLight(fragPosLightSpaceDirLight, bias, light.shadowMap);
 	}
@@ -336,12 +346,12 @@ vec3 calcDirectionalLight(DirLight light, vec3 inormal, vec3 viewPos) {
 	return (0.15*ambient + (1-shadow)*(diffuse + specular));
 }
 
-vec3 calcPointLight(Light light, vec3 inormal, vec3 fragPos, vec3 viewPos) {
+vec3 calcPointLight(PointLight light, vec3 inormal, vec3 fragPos, vec3 viewPos) {
 
 	vec3 lightDir = normalize(light.position - fragPos);
 	vec3 viewDir = normalize(viewPos - fragPos);
 	inormal = normalize(inormal);
-	float diff = abs(dot(inormal, lightDir));
+	float diff = max(dot(inormal, lightDir), 0.0);
 
 	vec3 reflectDir = reflect(-lightDir, inormal);
 	vec3 halfwayDir = normalize(lightDir + viewDir);
@@ -371,9 +381,13 @@ vec3 calcPointLight(Light light, vec3 inormal, vec3 fragPos, vec3 viewPos) {
 		specular = light.specular * (spec * material.specular);
 	}
 
-	
-	return attenuation * (ambient + diffuse + specular);
+	float shadow = 0.0;
+	if (light.castShadows) {
+		shadow = PointLightShadowCalculation(light, 0.05);
+		//shadow = 1.0;
+	}
 
+	return attenuation * (ambient + (1.0-shadow)*(diffuse + specular));
 }
 
 
@@ -398,10 +412,9 @@ void main()
 
 	vec3 color;
 	// A lot of room to optimize; calculations done separately for each light
-	//color += calcPointLight(light, normal, fragPos, viewPos);
-	
+	color += calcPointLight(pointLight, newNormal, fragPos, viewPos);
 	color += calcDirectionalLight(dirLight, newNormal, viewPos);
-	color += calcSpotLight(spotLight, normal, viewPos, fragPos);
+	color += calcSpotLight(spotLight, newNormal, viewPos, fragPos);
 	color += 1.3*emission;
 	//vec3 mapped = vec3(1.0)-exp(-color*exposure);
 	//mapped = pow(mapped, vec3(1.0 / gamma));

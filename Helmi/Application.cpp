@@ -116,9 +116,10 @@ bool Application::loadScene(const std::string& filepath)
 	//DirectionalLight dir(glm::vec3(-1.0f, -1.0f, 1.0f));
 	std::unique_ptr<Light> ptr = std::make_unique<DirectionalLight>(DirectionalLight(glm::vec3(-2.0f, 4.0f, -1.0f)));
 	std::unique_ptr<Light> ptr2 = std::make_unique<SpotLight>(SpotLight(glm::vec3(0.0f, 4.0f, 0.0f), glm::vec3(2.0f, 0.0f, 2.0f)));
-	
+	std::unique_ptr<Light> ptr3 = std::make_unique<PointLight>(PointLight(glm::vec3(0.0f, 5.0f, 0.0f)));
 	m_lights.push_back(std::move(ptr));
 	m_lights.push_back(std::move(ptr2));
+	m_lights.push_back(std::move(ptr3));
 	Shader shader("shaders/BlinnPhongShader.vert", "shaders/BlinnPhongShader.frag"); // 0
 	m_shaders.push_back(shader);
 	Shader skybox("shaders/SkyboxShader.vert", "shaders/SkyboxShader.frag");
@@ -135,7 +136,9 @@ bool Application::loadScene(const std::string& filepath)
 	m_shaders.push_back(bloomBlurShader);
 	Shader areaLightShader("shaders/3DquadShader.vert", "shaders/3DquadShader.frag"); // 7
 	m_shaders.push_back(areaLightShader);
-	//load scene into rtformat
+	Shader pointShadowShader("shaders/PointLightDepthShader.vert", "shaders/PointLightDepthShader.frag", "shaders/PointLightDepthShader.geo"); //8
+	m_shaders.push_back(pointShadowShader);
+																													   //load scene into rtformat
 	initHelmirt();
 	return true;
 }
@@ -455,9 +458,17 @@ void Application::updateShadowMaps()
 	glEnable(GL_DEPTH_TEST);
 	for (int i = 0; i < m_lights.size(); ++i) {
 		if (!m_lights[i]->castsShadows) continue;
-		m_shaders[3].UseProgram();
-		m_lights[i]->prepareShadowMap(m_shaders[3]);
-		m_models[0].simpleDraw(m_shaders[3]);
+		if (m_lights[i]->type == LightType::PointLight) {
+			m_shaders[8].UseProgram();
+			m_lights[i]->prepareShadowMap(m_shaders[8]);
+			m_models[0].simpleDraw(m_shaders[8]);
+		}
+		else{
+			m_shaders[3].UseProgram();
+			m_lights[i]->prepareShadowMap(m_shaders[3]);
+			m_models[0].simpleDraw(m_shaders[3]);
+		}
+
 	}
 	//glDisable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
@@ -476,6 +487,7 @@ void Application::renderScene(const glm::mat4& projection, const glm::mat4& view
 	m_shaders[0].UseProgram();
 	m_lights[0]->setUniforms(m_shaders[0]);
 	m_lights[1]->setUniforms(m_shaders[0]);
+	m_lights[2]->setUniforms(m_shaders[0]);
 	//m_shaders[0].setUniform1f("exposure", exposure);
 	m_shaders[0].setUniformMat4f("lightSpaceMatrixDirLight", m_lights[0]->getLightSpaceMatrix());
 	m_shaders[0].setUniformMat4f("lightSpaceMatrixSpotLight", m_lights[1]->getLightSpaceMatrix());

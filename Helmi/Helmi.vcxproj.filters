@@ -175,5 +175,62 @@
     <None Include="3DquadShader.frag">
       <Filter>shaders</Filter>
     </None>
+    <None Include="shaders\3DquadShader.frag">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="shaders\3DquadShader.vert">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="shaders\BlinnPhongShader.frag">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="shaders\BlinnPhongShader.vert">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="shaders\GaussianBlurShader.frag">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="shaders\ImageShader.frag">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="shaders\ImageShader.vert">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="shaders\lightShader.frag">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="shaders\lightShader.vert">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="shaders\PostProcessingBasic.frag">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="shaders\ShadowDepthShader.frag">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="shaders\ShadowDepthShader.vert">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="shaders\ShowShadowMap.frag">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="shaders\ShowShadowMap.vert">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="shaders\SkyboxShader.frag">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="shaders\SkyboxShader.vert">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="PointLightDepthShader.vert">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="PointLightDepthShader.frag">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="PointLightDepthShader.geo">
+      <Filter>shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

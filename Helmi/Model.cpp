@@ -48,6 +48,7 @@ std::vector<helmirt::RTTriangle> Model::trianglesToRT()
 		mat->diffuse_tex = m.m_material.diffuse_map_name;
 		mat->specular_tex = m.m_material.specular_map_name;
 		mat->normal_tex = m.m_material.normal_map_name;
+		mat->glossiness = m.m_material.shininess;
 
 		//create rtTextures
 		if (!m.m_material.diffuse_map_name.empty()) {
@@ -59,6 +60,7 @@ std::vector<helmirt::RTTriangle> Model::trianglesToRT()
 				std::shared_ptr<rtTexture2D> tex = std::make_shared<rtTexture2D>(rtTexture2D(data, width, height, nChannels));
 				mat->diffuse_map = tex;
 			}
+			stbi_image_free(data);
 		}
 
 		//normal maps
@@ -71,6 +73,20 @@ std::vector<helmirt::RTTriangle> Model::trianglesToRT()
 				std::shared_ptr<rtTexture2D> tex = std::make_shared<rtTexture2D>(rtTexture2D(data, width, height, nChannels));
 				mat->normal_map = tex;
 			}
+			stbi_image_free(data);
+		}
+
+		//specular map
+		if (!m.m_material.specular_map_name.empty()) {
+			std::cout << "creating Specular rtTexture: " << std::string(MODELS + m.m_material.specular_map_name) << "\n";
+			int width, height, nChannels;
+			stbi_set_flip_vertically_on_load(false);
+			unsigned char* data = stbi_load(std::string(MODELS + m.m_material.specular_map_name).c_str(), &width, &height, &nChannels, 0);
+			if (data != nullptr) {
+				std::shared_ptr<rtTexture2D> tex = std::make_shared<rtTexture2D>(rtTexture2D(data, width, height, nChannels));
+				mat->specular_map = tex;
+			}
+			stbi_image_free(data);
 		}
 
 		for (int i = 0; i*3 < m.indices.size(); ++i) {
