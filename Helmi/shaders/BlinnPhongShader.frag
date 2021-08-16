@@ -19,6 +19,15 @@ const int num_blocker_samples = 16;
 const float light_size = 0.05;
 const int num_pcf_samples = 64;
 
+const vec3 sampleOffsetDirections[20] = vec3[]
+(
+	vec3(1, 1, 1), vec3(1, -1, 1), vec3(-1, -1, 1), vec3(-1, 1, 1),
+	vec3(1, 1, -1), vec3(1, -1, -1), vec3(-1, -1, -1), vec3(-1, 1, -1),
+	vec3(1, 1, 0), vec3(1, -1, 0), vec3(-1, -1, 0), vec3(-1, 1, 0),
+	vec3(1, 0, 1), vec3(-1, 0, 1), vec3(1, 0, -1), vec3(-1, 0, -1),
+	vec3(0, 1, 1), vec3(0, -1, 1), vec3(0, -1, -1), vec3(0, 1, -1)
+	);
+
 const vec2 poissonDisk[64] =  vec2[](
 	vec2(-0.04117257f, -0.1597612f),
 	vec2(0.06731031f, -0.4353096f),
@@ -186,6 +195,22 @@ float PointLightShadowCalculation(PointLight light, float bias) {
 	float currentDepth = length(fragToLight);
 	float shadow = currentDepth - bias > closestDepth ? 1.0 : 0.0;
 	return shadow;
+}
+
+
+float pcfPointLight(PointLight light, float bias) {
+	float size = 0.05;
+	vec3 fragToLight = fragPos - light.position;
+	float currentDepth = length(fragToLight);
+	float shadow = 0.0;
+	for (int i = 0; i < 20; ++i) {
+		float closestDepth = texture(light.shadowMap, fragToLight + sampleOffsetDirections[i] * size).r;
+		closestDepth *= light.far_plane;
+		if (currentDepth - bias > closestDepth) {
+			shadow += 1.0;
+		}
+	}
+	return shadow / 20.0;
 }
 
 float ShadowCalculationPoisson(vec4 fragPosLightSpace, float bias, sampler2D shadowMap) {
@@ -383,8 +408,8 @@ vec3 calcPointLight(PointLight light, vec3 inormal, vec3 fragPos, vec3 viewPos) 
 
 	float shadow = 0.0;
 	if (light.castShadows) {
-		shadow = PointLightShadowCalculation(light, 0.05);
-		//shadow = 1.0;
+		//shadow = PointLightShadowCalculation(light, 0.05);
+		shadow = pcfPointLight(light, 0.05);
 	}
 
 	return attenuation * (ambient + (1.0-shadow)*(diffuse + specular));
