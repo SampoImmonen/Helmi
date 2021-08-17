@@ -23,7 +23,7 @@ public:
 	Model(const char* path);
 
 	void Draw(Shader& shader);
-	void imGuiControls();
+	void imGuiControls(const std::string& name);
 	void simpleDraw(Shader& shader);
 	std::vector<helmirt::RTTriangle> trianglesToRT();
 	std::vector<Mesh> meshes;

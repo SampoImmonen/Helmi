@@ -15,17 +15,16 @@ void Model::Draw(Shader& shader)
 	}
 }
 
-void Model::imGuiControls()
+void Model::imGuiControls(const std::string& name)
 {
-	if (ImGui::CollapsingHeader("model")){
+	
 	ImGui::Text("transform");
-	ImGui::SliderFloat3("translation", &position[0], -5.0f, 5.0f);
+	ImGui::InputFloat3("translation", &position[0]);
 	ImGui::InputFloat3("rotation", &rotation[0]);
-	ImGui::SliderFloat3("scale", &scale[0], 0.1f, 5.0f);
+	ImGui::InputFloat3("scale", &scale[0]);
 	
 	if (ImGui::CollapsingHeader("meshes")) {
 		ImGui::Text("show model meshes imguiControls");
-	}
 	}
 }
 

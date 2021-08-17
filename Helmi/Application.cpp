@@ -170,6 +170,18 @@ void Application::loadNewScene()
 	// update rtTriangles as well??
 }
 
+void Application::addModel()
+{
+	std::string path = FileHandler::openFilePath();
+	//add exception handling for non obj or fbx files
+	m_models.push_back(Model(path.c_str()));
+}
+
+void Application::deleteModel(int i)
+{
+	m_models.erase(m_models.begin() + i);
+}
+
 void Application::initApp()
 {
 	std::cout << "Helmi Rendering engine 2020\n";
@@ -353,7 +365,8 @@ void Application::render()
 	
 	//render control panel
 	ImGui::Begin("control panel");
-	ImGui::Text("Moi");
+
+	
 	ImGui::Text("frametime: %fms", m_fpsinfo.fps);
 	ImGui::Text("%d", m_height);
 	ImGui::Text("%d", m_width);
@@ -379,12 +392,26 @@ void Application::render()
 			}
 		}
 	}
-
 	if (ImGui::CollapsingHeader("models")) {
-		for (auto& model : m_models) {
-			model.imGuiControls();
+		for (size_t i = 0; i < m_models.size(); ++i) {
+			if (ImGui::CollapsingHeader(std::to_string(i).c_str())) {
+				m_models[i].imGuiControls(std::to_string(i));
+				if (ImGui::Button("delete")) { deleteModel(i); }
+			}
 		}
+		
 	}
+	if (ImGui::BeginPopupContextItem("delete")) {
+		if (ImGui::Button("add model")) { addModel(); }
+		ImGui::EndPopup();
+	}
+	
+	//add model popup
+	if (ImGui::BeginPopupContextItem("add items")) {
+		if (ImGui::Button("add model")) { addModel(); }
+		ImGui::EndPopup();
+	}
+	ImGui::OpenPopupOnItemClick("add items", ImGuiPopupFlags_MouseButtonRight);
 	if (ImGui::CollapsingHeader("rtProps")) {
 		ImGui::Checkbox("draw rt-props", &m_drawrtprops);
 		if (m_drawrtprops) {
@@ -402,8 +429,7 @@ void Application::render()
 	}
 	
 	ImGui::End();
-	ImGui::End();
-	
+	ImGui::End();	
 	//imgui post render
 	ImGui::Render();
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -461,12 +487,17 @@ void Application::updateShadowMaps()
 		if (m_lights[i]->type == LightType::PointLight) {
 			m_shaders[8].UseProgram();
 			m_lights[i]->prepareShadowMap(m_shaders[8]);
-			m_models[0].simpleDraw(m_shaders[8]);
+			for (auto& model : m_models) {
+				model.simpleDraw(m_shaders[8]);
+			}
+			
 		}
 		else{
 			m_shaders[3].UseProgram();
 			m_lights[i]->prepareShadowMap(m_shaders[3]);
-			m_models[0].simpleDraw(m_shaders[3]);
+			for (auto& model : m_models) {
+				model.simpleDraw(m_shaders[3]);
+			}
 		}
 
 	}
@@ -500,7 +531,9 @@ void Application::renderScene(const glm::mat4& projection, const glm::mat4& view
 	m_shaders[0].setUniform1f("bloomThreshold", m_bloomThreshold);
 	//m_shaders[0].setUniformInt("shadowMap", 3);
 	//m_shadowmap.bindDepthTexture(3);
-	m_models[0].Draw(m_shaders[0]);
+	for (auto& model : m_models) {
+		model.Draw(m_shaders[0]);
+	}
 	if (m_drawrtprops) {
 		//glDisable(GL_CULL_FACE);
 		drawrtLights(projection, view);

@@ -22,6 +22,7 @@
 #include "FileHandler.h"
 #include "rtAreaLight.h"
 #include "Random.h"
+#include "imgui_internal.h"
 
 struct ScreenVAO {
 
@@ -103,6 +104,8 @@ public:
 	void startApplication();
 	bool loadModel(const std::string& filepath);
 	void loadNewScene();
+	void addModel();
+	void deleteModel(int i);
 
 	//callbacks
 	void mouseCallback(GLFWwindow* window, double xpos, double ypos);
