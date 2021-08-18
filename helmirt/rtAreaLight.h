@@ -7,6 +7,12 @@
 
 namespace helmirt {
 
+/*
+Light for ray traced rendering
+
+Create unified light interface when path tracing architecture is clear
+(until then lights are hardcoded for ray tracing)
+*/
 
 class rtAreaLight
 {
@@ -31,6 +37,10 @@ public:
 private:
 	glm::vec3 m_emission = glm::vec3(100.0f);
 	glm::mat4 m_modelmatrix = glm::mat4(1.0f);
+};
+
+class rtPointLight {
+
 };
 
 }

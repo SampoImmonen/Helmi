@@ -2,11 +2,9 @@
 
 Shader::Shader(const std::string& vpath, const std::string& fpath)
 {
-	
 	vertexPath = vpath;
 	fragmentPath = fpath;
 	compileShaders();
-	
 }
 
 Shader::Shader(const std::string& vpath, const std::string& fpath, const std::string& gpath)

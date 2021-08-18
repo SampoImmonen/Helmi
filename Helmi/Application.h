@@ -105,7 +105,7 @@ public:
 	bool loadModel(const std::string& filepath);
 	void loadNewScene();
 	void addModel();
-	void deleteModel(int i);
+	void deleteModel(int index);
 
 	//callbacks
 	void mouseCallback(GLFWwindow* window, double xpos, double ypos);
