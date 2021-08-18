@@ -40,7 +40,17 @@ private:
 };
 
 class rtPointLight {
-
+public:
+	rtPointLight() = default;
+	rtPointLight(const glm::vec3& position) : m_position(position) {}
+	glm::vec3 getPosition() const { return m_position; }
+	glm::vec3 getColor() const { return m_emission / 100.0f;}
+	void setPosition(const glm::vec3& position) { m_position = position; }
+	void sample(float& pdf, glm::vec3& point) { pdf = 1.0f; point = m_position; };
+	
+private:
+	glm::vec3 m_position = glm::vec3(0.0f);
+	glm::vec3 m_emission = glm::vec3(100.0f);
 };
 
 }

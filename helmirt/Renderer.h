@@ -69,6 +69,8 @@ namespace helmirt {
 		glm::vec3 whittedRayTracing(const RayhitResult& rt, const Camera& cam, Random& rng, int maxdepth = 3);
 
 		rtAreaLight m_arealight;
+		rtPointLight m_pointlight;
+
 	private:
 		std::vector<RTTriangle> m_triangles;
 		Bvh m_bvh;

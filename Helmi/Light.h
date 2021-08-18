@@ -29,6 +29,7 @@ public:
 	virtual void bindShadowMapTexture(int unit) = 0;
 	virtual void bindShadowMap() = 0;
 	virtual void unbindShadowMap() = 0;
+	virtual glm::vec3* getPosition() { return nullptr; }
 	glm::vec3 ambient = glm::vec3(1.0f);
 	glm::vec3 diffuse = glm::vec3(1.0f);
 	glm::vec3 specular = glm::vec3(1.0f);
@@ -96,6 +97,7 @@ public:
 	void bindShadowMapTexture(int unit) override;
 	virtual void bindShadowMap() override;
 	virtual void unbindShadowMap() override;
+	virtual glm::vec3* getPosition() override { return &m_position; }
 private:
 	glm::vec3 m_position = glm::vec3(0.0f, 1.0f, 0.0f);
 	//attenuation factors

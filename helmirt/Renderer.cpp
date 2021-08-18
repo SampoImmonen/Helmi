@@ -578,8 +578,7 @@ namespace helmirt {
 
 	glm::vec3 Renderer::whittedRayTracing(const RayhitResult& rt, const Camera& cam, Random& rng ,int maxdepth)
 	{
-		//generalize with different type of lights and reflections and refractions
-		
+		//generalize with different type of lights and reflections and refractions TO DO
 		ShadingResult r = getShadingParameters(rt);
 		glm::vec3 n = rt.tri->m_normal;
 		//flip normal of on the other side of hitpoint
@@ -588,7 +587,6 @@ namespace helmirt {
 		float shadow = 0.0f, pdf;
 		glm::vec3 point;
 		glm::vec3 rayOrig = rt.point + n * 0.0001f;
-
 		//estimate shadows from area light by sampling
 		for (unsigned int i = 0; i < m_numofshadowsrays; ++i) {
 			m_arealight.sample(pdf, point, rng);
@@ -603,13 +601,31 @@ namespace helmirt {
 				shadow += 1.0f;
 			}
 		}
+		//area light lighting
 		glm::vec3 L = glm::normalize(m_arealight.getPosition() - rt.point);
 		glm::vec3 H = glm::normalize(L - glm::normalize(rt.ray.dir));
 		glm::vec3 diffuse = r.diffuse * std::max(0.0f, glm::dot(r.normal, L));
 		glm::vec3 specular = r.specular * std::pow(std::max(0.0f, glm::dot(r.normal, H)), r.glossiness);
-
+		glm::vec3 color = (1.0f - shadow / m_numofshadowsrays)* (diffuse + specular) + 0.05f * r.diffuse;
+		//estimate lighting for point light
+		
+		shadow = 0.0f;
+		m_pointlight.sample(pdf, point);
+		glm::vec3 shadowRayDir = point - rayOrig;
+		float raylen = glm::length(shadowRayDir);
+		RayhitResult shadowrayrt = rayTrace(Ray(rayOrig, glm::normalize(shadowRayDir)));
+		if ((shadowrayrt.t < raylen - 0.00001f) && shadowrayrt.tri != nullptr) {
+			shadow += 1.0f;
+		}
+		float attenuation = 1.0f / (1.0f + 0.001f*raylen * raylen);
+		L = glm::normalize(m_pointlight.getPosition() - rt.point);
+		H = glm::normalize(L - glm::normalize(rt.ray.dir));
+		diffuse = r.diffuse * std::max(0.0f, glm::dot(r.normal, L));
+		specular = r.specular * std::pow(std::max(0.0f, glm::dot(r.normal, H)), r.glossiness);
+		color += attenuation*((1.0f - shadow) * (diffuse + specular) + 0.05f * r.diffuse);
+		
 		//blinnphong
-		return (1.0f - shadow / m_numofshadowsrays) * (diffuse + specular)+0.2f*r.diffuse;
+		return color;
 	}
 
 }

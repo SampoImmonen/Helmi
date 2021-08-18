@@ -70,7 +70,7 @@ Application::Application()
 {
 	
 	initApp();
-	loadScene(MODELS + std::string("shadowstest.obj"));
+	loadScene(MODELS + std::string("crytek-sponza/sponza.obj"));
 	m_skybox = CubeMap("textures/skybox/");
 	m_fbo = FrameBuffer(m_width, m_height);
 	m_hdrFBO = HDRFrameBuffer(m_width, m_height);
@@ -381,7 +381,7 @@ void Application::render()
 	}
 	if (ImGui::CollapsingHeader("general scene settings")){
 		ImGui::SliderFloat("exposure", &exposure, 0.01f, 10.0f);
-		ImGui::SliderFloat("scale", &m_scale, 1.0f, 20.0f);
+		ImGui::InputFloat("scale", &m_scale);
 		ImGui::Checkbox("bloom", &m_bloomOn);
 		if (m_bloomOn) {
 			if (ImGui::CollapsingHeader("bloom settings")) {
@@ -652,9 +652,8 @@ void Application::processInput(GLFWwindow* window)
 		app.m_renderer.m_arealight.setNormal(m_rtArealight.m_normal);
 		app.m_renderer.m_arealight.setPosition(m_rtArealight.m_position);
 		app.m_renderer.m_arealight.calculateModelMatrix();
+		app.m_renderer.m_pointlight.setPosition(*m_lights[2]->getPosition());
 		app.renderRT();
-		glm::vec3 v(1.0f);
-		std::cout << v.length() << "\n";
 		//app.saveRTImage("image.ppm");
 		app.m_rtimage.updateTexture();
 	}

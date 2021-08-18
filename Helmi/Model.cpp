@@ -216,7 +216,7 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
 		//fetch normal texture
 		//textureName.Clear();
 		textureName = "";
-		material->Get(AI_MATKEY_TEXTURE(aiTextureType_NORMALS, 0), textureName);
+		material->Get(AI_MATKEY_TEXTURE(aiTextureType_HEIGHT, 0), textureName);
 		mat.normal_map_name = textureName.C_Str();
 		if (!mat.normal_map_name.empty()) {
 			mat.m_normal_map = std::make_shared<Texture2D>(Texture2D(MODELS + mat.normal_map_name));
