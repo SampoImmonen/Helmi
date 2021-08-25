@@ -36,6 +36,11 @@ struct glMaterial {
 	std::shared_ptr<Texture2D> m_normal_map;
 	std::shared_ptr<Texture2D> m_emission_map;
 
+	//PBR
+	float metallic = 0.0f;
+	float roughness = 1.0f;
+	float ao = 1.0f;
+
 	float shininess = 1.0f;
 };
 
@@ -52,6 +57,7 @@ public:
 	
 	void Draw(Shader& shader);
 	void SimpleDraw(Shader& shader);
+	void DrawPBR(Shader& shader);
 
 	glMaterial m_material;
 private:

@@ -232,5 +232,11 @@
     <None Include="PointLightDepthShader.geo">
       <Filter>shaders</Filter>
     </None>
+    <None Include="PBRShader.vert">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="PBRShader.frag">
+      <Filter>shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

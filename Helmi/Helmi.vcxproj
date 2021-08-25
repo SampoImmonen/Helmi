@@ -273,6 +273,8 @@
     <None Include="ImageShader.vert" />
     <None Include="lightShader.frag" />
     <None Include="lightShader.vert" />
+    <None Include="PBRShader.frag" />
+    <None Include="PBRShader.vert" />
     <None Include="PointLightDepthShader.frag" />
     <None Include="PointLightDepthShader.geo" />
     <None Include="PointLightDepthShader.vert" />

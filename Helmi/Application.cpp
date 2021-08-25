@@ -70,7 +70,7 @@ Application::Application()
 {
 	
 	initApp();
-	loadScene(MODELS + std::string("crytek-sponza/sponza.obj"));
+	loadScene(MODELS + std::string("PBRtest.obj"));
 	m_skybox = CubeMap("textures/skybox/");
 	m_fbo = FrameBuffer(m_width, m_height);
 	m_hdrFBO = HDRFrameBuffer(m_width, m_height);
@@ -138,6 +138,8 @@ bool Application::loadScene(const std::string& filepath)
 	m_shaders.push_back(areaLightShader);
 	Shader pointShadowShader("shaders/PointLightDepthShader.vert", "shaders/PointLightDepthShader.frag", "shaders/PointLightDepthShader.geo"); //8
 	m_shaders.push_back(pointShadowShader);
+	Shader PBRShader("PBRShader.vert", "PBRShader.frag");
+	m_shaders.push_back(PBRShader);
 																													   //load scene into rtformat
 	initHelmirt();
 	return true;
@@ -302,7 +304,13 @@ void Application::render()
 	glm::mat4 view = m_glcamera.GetViewMatrix();
 	m_hdrFBO.bind();
 	if (!m_show_shadowmap) {
-		renderScene(projection, view);
+		if (!m_renderPBR) {
+			renderScene(projection, view);
+		}
+		else {
+			renderScenePBR(projection, view);
+		}
+		
 	}
 	if (m_show_shadowmap) {
 		m_shaders[4].UseProgram();
@@ -372,6 +380,7 @@ void Application::render()
 	ImGui::Text("%d", m_width);
 	ImGui::Checkbox("show rtimage", &show_rt);
 	ImGui::Checkbox("show shadowmap", &m_show_shadowmap);
+	ImGui::Checkbox("PBR shading", &m_renderPBR);
 	ImGui::Text("%s", "Lights");
 
 	if (ImGui::CollapsingHeader("light settings")){
@@ -499,7 +508,6 @@ void Application::updateShadowMaps()
 				model.simpleDraw(m_shaders[3]);
 			}
 		}
-
 	}
 	//glDisable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
@@ -540,6 +548,36 @@ void Application::renderScene(const glm::mat4& projection, const glm::mat4& view
 	}
 }
 
+void Application::renderScenePBR(const glm::mat4& projection, const glm::mat4& view)
+{
+
+	std::vector<glm::vec3> lightpos = { glm::vec3(2, 2, 2), glm::vec3(-2, 2, 2), glm::vec3(-2, 2, -2), glm::vec3(2, 2, -2) };
+
+
+	//render scene using PBR Shader and material
+	m_hdrFBO.bind();
+	glEnable(GL_DEPTH_TEST);
+	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	//draw skybox
+	m_skybox.draw(m_shaders[1], projection, view);
+	m_shaders[9].UseProgram();
+	//set common uniforms
+	m_shaders[9].setUniformMat4f("projection", projection);
+	m_shaders[9].setUniformMat4f("view", view);
+	m_shaders[9].setUniformVec3("viewPos", m_glcamera.Position);
+	for (int i = 0; i < lightpos.size(); ++i) {
+		m_shaders[9].setUniformVec3(("lightPositions[" + std::to_string(i) + "]").c_str(), lightpos[i]);
+		m_shaders[9].setUniformVec3(("lightColors[" + std::to_string(i) + "]").c_str(), glm::vec3(300.0f));
+	}
+	for (auto& model : m_models) {
+		model.DrawPBR(m_shaders[9]);
+	}
+
+
+}
+
 void Application::renderToScreen()
 {
 	m_fbo.bind();
@@ -563,8 +601,10 @@ void Application::reloadShaders()
 {
 	Shader blingPhongShader("shaders/BlinnPhongShader.vert", "shaders/BlinnPhongShader.frag");
 	Shader showShadowShader("shaders/ShowShadowMap.vert", "shaders/ShowShadowMap.frag");
+	Shader PBRShader("PBRShader.vert", "PBRShader.frag");
 	m_shaders[0] = blingPhongShader;
 	m_shaders[4] = showShadowShader;
+	m_shaders[9] = PBRShader;
 }
 
 auto Application::getNativeWindow()

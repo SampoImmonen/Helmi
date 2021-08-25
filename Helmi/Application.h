@@ -131,6 +131,7 @@ private:
 	void bloomBlur(Shader& shader, int iterations);
 	void updateShadowMaps();
 	void renderScene(const glm::mat4& projection, const glm::mat4& view);
+	void renderScenePBR(const glm::mat4& projection, const glm::mat4& view);
 	void renderToScreen();
 	
 
@@ -184,6 +185,7 @@ private:
 
 	bool show_rt = false;
 	bool m_show_shadowmap = false;
+	bool m_renderPBR = false;
 	unsigned int getTextureId();
 
 	//static wrapper class to handle glfw callbacks

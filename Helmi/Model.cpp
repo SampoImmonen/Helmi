@@ -15,6 +15,15 @@ void Model::Draw(Shader& shader)
 	}
 }
 
+void Model::DrawPBR(Shader& shader)
+{
+	shader.UseProgram();
+	setUniforms(shader);
+	for (int i = 0; i < meshes.size(); ++i) {
+		meshes[i].DrawPBR(shader);
+	}
+}
+
 void Model::imGuiControls(const std::string& name)
 {
 	
