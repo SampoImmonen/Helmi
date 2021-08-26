@@ -20,6 +20,7 @@ class Light
 public:
 	virtual ~Light() {};
 	virtual void setUniforms(Shader& shader) = 0;
+	virtual void setUniformsPBR(Shader& shader) = 0;
 	virtual void update(float ts) = 0;
 	virtual float* get_direction() { return nullptr; }
 	virtual float* get_size() { return nullptr; }
@@ -43,6 +44,7 @@ class DirectionalLight : public Light {
 public:
 	DirectionalLight(const glm::vec3& direction);
 	void setUniforms(Shader& shader) override;
+	virtual void setUniformsPBR(Shader& shader) override;
 	void update(float ts) override;
 	float* get_direction() override { return &direction[0]; }
 	float* get_size() override { return &size; }
@@ -65,6 +67,7 @@ public:
 	SpotLight() {};
 	SpotLight(const glm::vec3& position, const glm::vec3 direction);
 	void setUniforms(Shader& shader) override;
+	virtual void setUniformsPBR(Shader& shader) override;
 	void update(float ts) override;
 	glm::mat4 getLightSpaceMatrix(float scale = 1.0f) override;
 	void ImGuiControls() override;
@@ -90,6 +93,7 @@ public:
 	PointLight() {};
 	PointLight(const glm::vec3& position);
 	void setUniforms(Shader& shader) override;
+	virtual void setUniformsPBR(Shader& shader) override;
 	void update(float ts) override;
 	glm::mat4 getLightSpaceMatrix(float scale = 1.0f) override;
 	void ImGuiControls() override;
@@ -100,6 +104,7 @@ public:
 	virtual glm::vec3* getPosition() override { return &m_position; }
 private:
 	glm::vec3 m_position = glm::vec3(0.0f, 1.0f, 0.0f);
+	glm::vec3 m_intensity = glm::vec3(100.0f);
 	//attenuation factors
 	float m_constant = 1.0f, m_linear = 1.5f, m_quadratic = 0.0f;
 	DepthCubeMapFBO m_shadowMap;

@@ -20,6 +20,10 @@ void DirectionalLight::setUniforms(Shader& shader)
     m_shadowMap.bindDepthTexture(4);
 }
 
+void DirectionalLight::setUniformsPBR(Shader& shader)
+{
+}
+
 
 void DirectionalLight::update(float ts)
 {
@@ -97,6 +101,10 @@ void SpotLight::setUniforms(Shader& shader)
 
 }
 
+void SpotLight::setUniformsPBR(Shader& shader)
+{
+}
+
 void SpotLight::update(float ts)
 {
 }
@@ -116,8 +124,8 @@ void SpotLight::ImGuiControls()
     if (ImGui::CollapsingHeader("SpotLight")){
 
         //position and direction
-        ImGui::SliderFloat3("position", &m_position[0], -10.0f, 10.0f);
-        ImGui::SliderFloat3("direction", &m_direction[0], -5.0f, 5.0f);
+        ImGui::InputFloat3("position", &m_position[0]);
+        ImGui::InputFloat3("direction", &m_direction[0]);
     
         //colors
         ImGui::ColorEdit3("ambient", &ambient[0]);
@@ -189,6 +197,23 @@ void PointLight::setUniforms(Shader& shader)
 
 }
 
+void PointLight::setUniformsPBR(Shader& shader)
+{
+    shader.UseProgram();
+    shader.setUniformVec3("pointlight.position", m_position);
+    shader.setUniformVec3("pointlight.intensity", m_intensity);
+
+    shader.setUniform1f("pointlight.constant", m_constant);
+    shader.setUniform1f("pointlight.linear", m_linear);
+    shader.setUniform1f("pointlight.quadratic", m_quadratic);
+    //shader.setUniform1f("pointlight.size", m_size);
+
+    shader.setUniformInt("pointlight.castShadows", castsShadows);
+    shader.setUniform1f("pointlight.far_plane", m_far);
+    shader.setUniformInt("pointlight.shadowMap", 6);
+    m_shadowMap.bindDepthTexture(6);
+}
+
 void PointLight::update(float ts)
 {
 }
@@ -202,7 +227,7 @@ void PointLight::ImGuiControls()
 {
     if (ImGui::CollapsingHeader("PointLight")) {
         //position and direction
-        ImGui::SliderFloat3("position", &m_position[0], -10.0f, 10.0f);
+        ImGui::InputFloat3("position", &m_position[0]);
     
         //colors
         ImGui::ColorEdit3("ambient", &ambient[0]);
@@ -213,6 +238,7 @@ void PointLight::ImGuiControls()
         ImGui::SliderFloat("linear", &m_linear, 0.0f, 5.0f);
         ImGui::SliderFloat("quadratic", &m_quadratic, 0.0f, 5.0f);
 
+        ImGui::InputFloat3("Intensity", &m_intensity[0]);
         ImGui::Checkbox("casts shadows", &castsShadows);
     }
 }

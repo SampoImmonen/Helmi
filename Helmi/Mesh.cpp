@@ -74,8 +74,8 @@ void Mesh::DrawPBR(Shader& shader)
 {
 	shader.setUniformVec3("material.albedo", m_material.diffuse);
 	shader.setUniform1f("material.metallic", m_material.metallic);
-	shader.setUniform1f("material.metallic", m_material.roughness);
-	shader.setUniform1f("material.metallic", m_material.ao);
+	shader.setUniform1f("material.roughness", m_material.roughness);
+	shader.setUniform1f("material.ao", m_material.ao);
 	glBindVertexArray(VAO);
 	glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
 	glBindVertexArray(0);

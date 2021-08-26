@@ -38,7 +38,7 @@ struct glMaterial {
 
 	//PBR
 	float metallic = 0.0f;
-	float roughness = 1.0f;
+	float roughness = 0.15f;
 	float ao = 1.0f;
 
 	float shininess = 1.0f;

@@ -564,18 +564,17 @@ void Application::renderScenePBR(const glm::mat4& projection, const glm::mat4& v
 	m_skybox.draw(m_shaders[1], projection, view);
 	m_shaders[9].UseProgram();
 	//set common uniforms
+	m_lights[2]->setUniformsPBR(m_shaders[9]);
 	m_shaders[9].setUniformMat4f("projection", projection);
 	m_shaders[9].setUniformMat4f("view", view);
 	m_shaders[9].setUniformVec3("viewPos", m_glcamera.Position);
 	for (int i = 0; i < lightpos.size(); ++i) {
 		m_shaders[9].setUniformVec3(("lightPositions[" + std::to_string(i) + "]").c_str(), lightpos[i]);
-		m_shaders[9].setUniformVec3(("lightColors[" + std::to_string(i) + "]").c_str(), glm::vec3(300.0f));
+		m_shaders[9].setUniformVec3(("lightColors[" + std::to_string(i) + "]").c_str(), glm::vec3(100.0f));
 	}
 	for (auto& model : m_models) {
 		model.DrawPBR(m_shaders[9]);
 	}
-
-
 }
 
 void Application::renderToScreen()

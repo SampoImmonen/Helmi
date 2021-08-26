@@ -8,8 +8,32 @@ in vec3 fragPos;
 in vec3 texCoords;
 
 uniform vec3 viewPos;
-uniform vec3 lightPositions[4];
-uniform vec3 lightColors[4];
+
+
+struct PointLight {
+	vec3 position;
+	vec3 intensity;
+
+	float constant;
+	float linear;
+	float quadratic;
+	
+	float size;
+	bool castShadows;
+	samplerCube shadowMap;
+	float far_plane;
+};
+
+const vec3 sampleOffsetDirections[20] = vec3[]
+(
+	vec3(1, 1, 1), vec3(1, -1, 1), vec3(-1, -1, 1), vec3(-1, 1, 1),
+	vec3(1, 1, -1), vec3(1, -1, -1), vec3(-1, -1, -1), vec3(-1, 1, -1),
+	vec3(1, 1, 0), vec3(1, -1, 0), vec3(-1, -1, 0), vec3(-1, 1, 0),
+	vec3(1, 0, 1), vec3(-1, 0, 1), vec3(1, 0, -1), vec3(-1, 0, -1),
+	vec3(0, 1, 1), vec3(0, -1, 1), vec3(0, -1, -1), vec3(0, 1, -1)
+	);
+
+uniform PointLight pointlight;
 
 struct PBRmaterial {
 	vec3 albedo;
@@ -19,7 +43,7 @@ struct PBRmaterial {
 };
 uniform PBRmaterial material;
 
-vec3 albedo = glm::vec3(0.3, 0.5, 0.0);
+vec3 albedo = vec3(0.3, 0.5, 0.0);
 float metallic = 1.0;
 float roughness = 0.15;
 float ao = 1.0;
@@ -63,42 +87,75 @@ float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness)
 	return ggx1 * ggx2;
 }
 
+float pcfPointLight(PointLight light, float bias) {
+	float size = 0.01;
+	vec3 fragToLight = fragPos - light.position;
+	float currentDepth = length(fragToLight);
+	float shadow = 0.0;
+	for (int i = 0; i < 20; ++i) {
+		float closestDepth = texture(light.shadowMap, fragToLight + sampleOffsetDirections[i] * size).r;
+		closestDepth *= light.far_plane;
+		if (currentDepth - bias > closestDepth) {
+			shadow += 1.0;
+		}
+	}
+	return shadow / 20.0;
+}
+
+float PointLightShadowCalculation(PointLight light, float bias) {
+	vec3 fragToLight = fragPos - light.position;
+	float closestDepth = texture(light.shadowMap, fragToLight).r;
+	closestDepth *= light.far_plane;
+	float currentDepth = length(fragToLight);
+	float shadow = currentDepth - bias > closestDepth ? 1.0 : 0.0;
+	return shadow;
+}
+
+
+vec3 CalcPointLight(PointLight light, vec3 N, vec3 V, vec3 F0) {
+	vec3 L = normalize(light.position - fragPos);
+	vec3 H = normalize(V + L);
+	float distance = length(light.position - fragPos);
+	float attenuation = 1.0 / (light.constant + light.linear * distance + light.quadratic * distance * distance);
+	vec3 radiance = light.intensity * attenuation;
+
+	vec3 F = fresnelSchlick(max(dot(H, V), 0), F0);
+
+	float NDF = DistributionGGX(N, H, material.roughness);
+	float G = GeometrySmith(N, V, L, material.roughness);
+
+	vec3 numerator = NDF * G * F;
+	float denomirator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0);
+	vec3 specular = numerator / max(denomirator, 0.001);
+
+	vec3 kS = F;
+	vec3 kD = vec3(1.0) - kS;
+	kD *= 1.0 - material.metallic;
+
+	float NdotL = max(dot(N, L), 0.0);
+	
+	//shadow calculations here
+	float shadow = 0.0;
+	if (light.castShadows) {
+		shadow = pcfPointLight(light, 0.05);
+		//shadow = PointLightShadowCalculation(light, 0.05);
+	}
+
+	return (kD * material.albedo / PI + specular) * radiance * NdotL*(1-shadow);
+
+}
 
 void main() {
 	vec3 N = normalize(normal);
 	vec3 V = normalize(viewPos - fragPos);
 
 	vec3 F0 = vec3(0.04);
-	F0 = mix(F0, albedo, metallic);
+	F0 = mix(F0, material.albedo, material.metallic);
 
-	vec3 Lo = vec3(0.0);
-	for (int i = 0; i < 4; ++i) {
-		vec3 L = normalize(lightPositions[i] - fragPos);
-		vec3 H = normalize(V + L);
-		
-		float distance = length(lightPositions[i] - fragPos);
-		float attenuation = 1.0 / (distance * distance);
-		vec3 radiance = lightColors[i] * attenuation;
-		
-		vec3 F = fresnelSchlick(max(dot(H, V), 0), F0);
+	vec3 L0 = vec3(0.0);
 
-		float NDF = DistributionGGX(N, H, roughness);
-		float G = GeometrySmith(N, V, L, roughness);
-
-		vec3 numerator =  NDF* G* F;
-		float denomirator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0);
-		vec3 specular = numerator / max(denomirator, 0.001);
-
-		vec3 kS = F;
-		vec3 kD = vec3(1.0) - kS;
-		kD *= 1.0 - metallic;
-
-		float NdotL = max(dot(N, L), 0.0);
-		Lo += (kD * albedo / PI + specular) * radiance * NdotL;
-	}
-
-	vec3 ambient = vec3(0.03) * albedo * ao;
-	vec3 color = ambient + Lo;
+	vec3 ambient = vec3(0.03) * material.albedo * material.ao;
+	vec3 color = ambient + CalcPointLight(pointlight, N, V, F0);
 	FragColor = vec4(color, 1.0);
 
 }
