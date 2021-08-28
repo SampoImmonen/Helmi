@@ -70,7 +70,7 @@ Application::Application()
 {
 	
 	initApp();
-	loadScene(MODELS + std::string("PBRtest.obj"));
+	loadScene(MODELS + std::string("shadowstest.obj"));
 	m_skybox = CubeMap("textures/skybox/");
 	m_fbo = FrameBuffer(m_width, m_height);
 	m_hdrFBO = HDRFrameBuffer(m_width, m_height);
@@ -564,6 +564,8 @@ void Application::renderScenePBR(const glm::mat4& projection, const glm::mat4& v
 	m_skybox.draw(m_shaders[1], projection, view);
 	m_shaders[9].UseProgram();
 	//set common uniforms
+	m_lights[0]->setUniformsPBR(m_shaders[9]);
+	m_shaders[9].setUniformMat4f("lightSpaceMatrixDirLight", m_lights[0]->getLightSpaceMatrix());
 	m_lights[2]->setUniformsPBR(m_shaders[9]);
 	m_shaders[9].setUniformMat4f("projection", projection);
 	m_shaders[9].setUniformMat4f("view", view);

@@ -57,6 +57,7 @@ public:
 private:
 	//direction points towards light
 	glm::vec3 direction;
+	glm::vec3 intensity = glm::vec3(10.0f);
 	//light size used for pcss soft shadows
 	float size = 0.05f;
 	ShadowMapBuffer m_shadowMap;

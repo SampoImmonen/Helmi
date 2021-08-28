@@ -174,7 +174,7 @@ private:
 
 	//who has responsibility for shadowmaps (ligths???)
 	ShadowMapBuffer m_shadowmap, m_shadowmap2;
-	float m_scale = 0.01f;
+	float m_scale = 1.0f;
 
 	//temporary solution
 	unsigned int qVAO, qVBO;

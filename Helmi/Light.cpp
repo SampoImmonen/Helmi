@@ -22,6 +22,13 @@ void DirectionalLight::setUniforms(Shader& shader)
 
 void DirectionalLight::setUniformsPBR(Shader& shader)
 {
+    shader.UseProgram();
+    shader.setUniformVec3("dirlight.direction", direction);
+    shader.setUniformVec3("dirlight.intensity", intensity);
+    shader.setUniform1f("dirlight.size", size);
+    shader.setUniformInt("dirlight.castShadows", castsShadows);
+    shader.setUniformInt("dirlight.shadowMap", 4);
+    m_shadowMap.bindDepthTexture(4);
 }
 
 
