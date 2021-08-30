@@ -53,7 +53,8 @@ void DirectionalLight::ImGuiControls()
         ImGui::ColorEdit3("diffuse", &diffuse[0]);
         ImGui::ColorEdit3("specular", &specular[0]);
         ImGui::InputFloat("size", &size);
-        ImGui::Checkbox("casts shadows", &castsShadows);        
+        ImGui::Checkbox("casts shadows", &castsShadows);
+        ImGui::InputFloat3("intensity", &intensity[0]);
     }
 }
 
@@ -110,6 +111,23 @@ void SpotLight::setUniforms(Shader& shader)
 
 void SpotLight::setUniformsPBR(Shader& shader)
 {
+    shader.UseProgram();
+    shader.setUniformVec3("spotlight.position", m_position);
+    shader.setUniformVec3("spotlight.direction", m_direction);
+    shader.setUniformVec3("spotlight.intensity", m_intensity);
+
+    shader.setUniform1f("spotlight.cutOff", glm::cos(glm::radians(m_cutOff)));
+    shader.setUniform1f("spotlight.outerCutOff", glm::cos(glm::radians(m_outerCutOff)));
+
+    shader.setUniform1f("spotlight.constant", m_constant);
+    shader.setUniform1f("spotlight.linear", m_linear);
+    shader.setUniform1f("spotlight.quadratic", m_quadratic);
+
+    shader.setUniform1f("spotlight.size", size);
+    shader.setUniformInt("spotlight.castShadows", castsShadows);
+    shader.setUniformInt("spotlight.shadowMap", 5);
+    m_shadowMap.bindDepthTexture(5);
+
 }
 
 void SpotLight::update(float ts)
@@ -149,6 +167,7 @@ void SpotLight::ImGuiControls()
 
         ImGui::Checkbox("casts shadows", &castsShadows);
         ImGui::SliderFloat("light size", &size, 0.0f, 1.0f);
+        ImGui::InputFloat3("intensity", &m_intensity[0]);
     }
 }
 

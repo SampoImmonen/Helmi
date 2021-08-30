@@ -9,6 +9,7 @@ in vec3 normal;
 in vec3 fragPos;
 in vec3 texCoords;
 in vec4 fragPosLightSpaceDirLight;
+in vec4 fragPosLightSpaceSpotLight;
 
 uniform vec3 viewPos;
 
@@ -32,6 +33,24 @@ struct DirLight {
 	vec3 direction;
 
 	vec3 intensity;
+
+	float size;
+	bool castShadows;
+	sampler2D shadowMap;
+};
+
+struct SpotLight {
+	vec3 position;
+	vec3 direction;
+
+	float cutOff;
+	float outerCutOff;
+	
+	vec3 intensity;
+
+	float constant;
+	float linear;
+	float quadratic;
 
 	float size;
 	bool castShadows;
@@ -116,6 +135,7 @@ const vec2 poissonDisk[64] = vec2[](
 
 uniform PointLight pointlight;
 uniform DirLight dirlight;
+uniform SpotLight spotlight;
 
 struct PBRmaterial {
 	vec3 albedo;
@@ -237,8 +257,6 @@ float PointLightShadowCalculation(PointLight light, float bias) {
 }
 
 
-
-
 vec3 CalcPointLight(PointLight light, vec3 N, vec3 V, vec3 F0) {
 	vec3 L = normalize(light.position - fragPos);
 	vec3 H = normalize(V + L);
@@ -300,6 +318,43 @@ vec3 CalcDirectionalLight(DirLight light, vec3 N, vec3 V, vec3 F0) {
 	return (kD * material.albedo / PI + specular) * radiance * NdotL*(1-shadow);
 }
 
+vec3 CalcSpotLight(SpotLight light, vec3 N, vec3 V, vec3 F0) {
+	vec3 L = normalize(light.position - fragPos);
+	vec3 H = normalize(V + L);
+	float distance = length(light.position - fragPos);
+	float attenuation = 1.0 / (light.constant + light.linear * distance + light.quadratic * distance * distance);
+	
+	float theta = dot(L, normalize(-light.direction));
+	float epsilon = (light.cutOff - light.outerCutOff);
+	float spot_intensity = clamp((theta - light.outerCutOff) / epsilon, 0.0, 1.0);
+	
+	vec3 radiance = light.intensity * attenuation*spot_intensity;
+	vec3 F = fresnelSchlick(max(dot(H, V), 0), F0);
+
+	float NDF = DistributionGGX(N, H, material.roughness);
+	float G = GeometrySmith(N, V, L, material.roughness);
+
+	vec3 numerator = NDF * G * F;
+	float denomirator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0);
+	vec3 specular = numerator / max(denomirator, 0.001);
+
+	vec3 kS = F;
+	vec3 kD = vec3(1.0) - kS;
+	kD *= 1.0 - material.metallic;
+
+	float NdotL = max(dot(N, L), 0.0);
+
+	//shadow calculations here
+	float shadow = 0.0;
+	if (light.castShadows) {
+		float bias = 0.05;
+		shadow = PCSSDirectionalLight(fragPosLightSpaceSpotLight, bias, light.shadowMap);
+		//shadow = 0.7;
+	}
+
+	return (kD * material.albedo / PI + specular) * radiance * NdotL * (1 - shadow);
+}
+
 
 void main() {
 	vec3 N = normalize(normal);
@@ -312,8 +367,9 @@ void main() {
 
 	vec3 ambient = vec3(0.03) * material.albedo * material.ao;
 	vec3 color = ambient;
-	color+= CalcPointLight(pointlight, N, V, F0);
+	color += CalcPointLight(pointlight, N, V, F0);
 	color += CalcDirectionalLight(dirlight, N, V, F0);
+	color += CalcSpotLight(spotlight, N, V, F0);
 	FragColor = vec4(color, 1.0);
 
 }
