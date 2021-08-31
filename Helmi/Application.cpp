@@ -219,7 +219,8 @@ void Application::initGLFW()
 	setupCallbacks();
 
 	glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR);
-	glfwSwapInterval(0);
+	//enable Vsync
+	//glfwSwapInterval(0);
 }
 
 void Application::initImGui()
@@ -317,7 +318,7 @@ void Application::render()
 		glBindVertexArray(qVAO);
 		glDisable(GL_DEPTH_TEST);
 		m_shaders[4].setUniformInt("screenTexture", 0);
-		m_lights[0]->bindShadowMapTexture(0);
+		m_lights[1]->bindShadowMapTexture(0);
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 	}
 	m_hdrFBO.unbind();
@@ -503,7 +504,6 @@ void Application::updateShadowMaps()
 		}
 		else{
 			m_shaders[3].UseProgram();
-			std::cout << "spot\n";
 			m_lights[i]->prepareShadowMap(m_shaders[3]);
 			for (auto& model : m_models) {
 				model.simpleDraw(m_shaders[3]);

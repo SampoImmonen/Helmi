@@ -22,7 +22,7 @@ struct Vertex {
 
 struct glMaterial {
 	glm::vec3 ambient = glm::vec3(0.0f);
-	glm::vec3 diffuse = glm::vec3(0.0f);
+	glm::vec3 diffuse = glm::vec3(1.0f, 1.0f, 0.0f);
 	glm::vec3 specular = glm::vec3(0.0f);
 	glm::vec3 emission = glm::vec3(0.0f);
 
@@ -37,8 +37,8 @@ struct glMaterial {
 	std::shared_ptr<Texture2D> m_emission_map;
 
 	//PBR
-	float metallic = 0.0f;
-	float roughness = 0.15f;
+	float metallic = 0.9f;
+	float roughness = 0.3f;
 	float ao = 1.0f;
 
 	float shininess = 1.0f;
