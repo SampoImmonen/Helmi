@@ -189,11 +189,11 @@ float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness)
 	return ggx1 * ggx2;
 }
 
-vec2 blockerSearchDirectionalLight(vec2 texCoords, float zReceiver, float bias, sampler2D shadowMap) {
+vec2 blockerSearchDirectionalLight(vec2 texCoords, float zReceiver, float bias, sampler2D shadowMap, float size) {
 	float blockers_dist = 0;
 	float num_blockers = 0;
 	for (int i = 0; i < num_blocker_samples; i++) {
-		vec2 stexCoords = texCoords + poissonDisk[i] * dirlight.size;
+		vec2 stexCoords = texCoords + poissonDisk[i] * size;
 		float b_dist = texture(shadowMap, stexCoords).r;
 		if (b_dist < zReceiver - bias) {
 			num_blockers++;
@@ -219,15 +219,15 @@ float pcf(vec2 texCoords, float zReceiver, float filterRadius, float bias, sampl
 	return sum / num_pcf_samples;
 }
 
-float PCSSDirectionalLight(vec4 fragPosLightSpace, float bias, sampler2D shadowMap) {
+float PCSSshadows(vec4 fragPosLightSpace, float bias, sampler2D shadowMap, float size) {
 	vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
 	projCoords = projCoords * 0.5 + 0.5;
 	vec2 ptexCoords = projCoords.xy;
-	vec2 blocker_stats = blockerSearchDirectionalLight(ptexCoords, projCoords.z, bias, shadowMap);
+	vec2 blocker_stats = blockerSearchDirectionalLight(ptexCoords, projCoords.z, bias, shadowMap, size);
 	if (blocker_stats.y < 1) {
 		return 0.0f;
 	}
-	float filterradius = dirlight.size * penumbraSize(projCoords.z, blocker_stats[0]);
+	float filterradius = size * penumbraSize(projCoords.z, blocker_stats[0]);
 	return pcf(ptexCoords, projCoords.z, filterradius, bias, shadowMap);
 }
 
@@ -311,7 +311,7 @@ vec3 CalcDirectionalLight(DirLight light, vec3 N, vec3 V, vec3 F0) {
 	if (light.castShadows) {
 		//float bias = max(0.05 * (1.0 - dot(N, lightDir)), 0.005);
 		//bias = 0.0002;
-		shadow = PCSSDirectionalLight(fragPosLightSpaceDirLight, 0.05, light.shadowMap);
+		shadow = PCSSshadows(fragPosLightSpaceDirLight, 0.05, light.shadowMap, light.size);
 	}
 
 	float NdotL = max(dot(N, L), 0.0);
@@ -347,8 +347,8 @@ vec3 CalcSpotLight(SpotLight light, vec3 N, vec3 V, vec3 F0) {
 	//shadow calculations here
 	float shadow = 0.0;
 	if (light.castShadows) {
-		float bias = 0.05;
-		shadow = PCSSDirectionalLight(fragPosLightSpaceSpotLight, bias, light.shadowMap);
+		float bias = 0.00;
+		shadow = PCSSshadows(fragPosLightSpaceSpotLight, 0.00, light.shadowMap, light.size);
 		//shadow = 0.7;
 	}
 

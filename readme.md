@@ -33,4 +33,8 @@ File explorer is windows specific
 
 ![alt text](https://github.com/SampoImmonen/Helmi/blob/dockinggui/media/multimodel.png)
 
+## Bugs:
+
+1. bugs related to Imgui Controls
+2. Spotlight shadows do not work if position and direction is controlled by InputFloat3 instead of slider float (why??)
 

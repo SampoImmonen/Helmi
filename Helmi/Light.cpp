@@ -149,8 +149,8 @@ void SpotLight::ImGuiControls()
     if (ImGui::CollapsingHeader("SpotLight")){
 
         //position and direction
-        ImGui::InputFloat3("position", &m_position[0]);
-        ImGui::InputFloat3("direction", &m_direction[0]);
+        ImGui::SliderFloat3("position2", &m_position[0], -10.0f, 10.0f);
+        ImGui::SliderFloat3("direction2", &m_direction[0], -5.0f, 5.0f);
     
         //colors
         ImGui::ColorEdit3("ambient", &ambient[0]);
