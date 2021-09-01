@@ -238,6 +238,13 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
 			mat.m_emission_map = std::make_shared<Texture2D>(Texture2D(MODELS + mat.emission_map_name));
 		}
 
+		textureName = "";
+		material->Get(AI_MATKEY_TEXTURE(aiTextureType_SHININESS, 0), textureName);
+		mat.metalness_map_name = textureName.C_Str();
+		if (!mat.metalness_map_name.empty()) {
+			mat.m_metalness_map = std::make_shared<Texture2D>(Texture2D(MODELS + mat.metalness_map_name));
+		}
+
 	}
 
 	return Mesh(vertices, indices, mat);
@@ -245,11 +252,15 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
 
 void Model::setUniforms(Shader& shader)
 {
-	glm::mat4 model = glm::mat4(1.0f);
-	model = glm::translate(model, position);
-	//model = glm::rotate(model, rotation);
-	model = glm::scale(model, scale);
-	shader.setUniformMat4f("model", model);
+	glm::mat4 translationMatrix = glm::mat4(1.0f);
+	translationMatrix = glm::translate(translationMatrix, position);
+
+	glm::quat quat(glm::vec3(glm::radians(rotation.x), glm::radians(rotation.y), glm::radians(rotation.z)));
+	glm::mat4 rotationMatrix = glm::toMat4(quat);
+	
+	glm::mat4 scaleMatrix = glm::mat4(1.0f);
+	scaleMatrix = glm::scale(scaleMatrix, scale);
+	shader.setUniformMat4f("model", translationMatrix*rotationMatrix*scaleMatrix);
 }
 
 void Model::simpleDraw(Shader& shader)

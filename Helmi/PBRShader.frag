@@ -7,11 +7,22 @@ const int num_blocker_samples = 16;
 out vec4 FragColor;
 in vec3 normal;
 in vec3 fragPos;
-in vec3 texCoords;
+in vec2 texCoords;
 in vec4 fragPosLightSpaceDirLight;
 in vec4 fragPosLightSpaceSpotLight;
+in mat3 TBN;
+
 
 uniform vec3 viewPos;
+
+struct surfaceProperties {
+	vec3 albedo;
+	float metallic;
+	float roughness;
+	float ao;
+	vec3 emission;
+};
+
 
 
 struct PointLight {
@@ -142,13 +153,55 @@ struct PBRmaterial {
 	float metallic;
 	float roughness;
 	float ao;
+	vec3 emission;
+
+	bool hasAlbedo;
+	bool hasRoughness;
+	bool hasNormal;
+	bool hasEmission;
+	bool hasMetalness;
+
+	sampler2D albedoMap;
+	sampler2D roughnessMap;
+	sampler2D normalMap;
+	sampler2D emissionMap;
+	sampler2D metalnessMap;
 };
 uniform PBRmaterial material;
 
-vec3 albedo = vec3(0.3, 0.5, 0.0);
-float metallic = 1.0;
-float roughness = 0.15;
-float ao = 1.0;
+surfaceProperties getSurfaceProperties() {
+	//if statements in shaders are bad????
+	surfaceProperties properties;
+	//albedo
+	if (material.hasAlbedo) {
+		properties.albedo = pow(texture(material.albedoMap, texCoords).rgb, vec3(2.2));
+	}
+	else {
+		properties.albedo = material.albedo;
+	}
+	//roughness
+	if (material.hasRoughness) {
+		properties.roughness = texture(material.roughnessMap, texCoords).r;
+	}
+	else {
+		properties.roughness = material.roughness;
+	}
+	//emission
+	if (material.hasEmission) {
+		properties.emission = texture(material.emissionMap, texCoords).rgb;
+	}
+	else {
+		properties.emission = material.emission;
+	}
+	//metalness
+	if (material.hasMetalness) {
+		properties.metallic = texture(material.metalnessMap, texCoords).r;
+	}
+	else {
+		properties.metallic = material.metallic;
+	}
+	return properties;
+}
 
 //functions used for cook-terrance BRDF
 vec3 fresnelSchlick(float cosTheta, vec3 F0) {
@@ -257,7 +310,7 @@ float PointLightShadowCalculation(PointLight light, float bias) {
 }
 
 
-vec3 CalcPointLight(PointLight light, vec3 N, vec3 V, vec3 F0) {
+vec3 CalcPointLight(PointLight light, vec3 N, vec3 V, vec3 F0, surfaceProperties props) {
 	vec3 L = normalize(light.position - fragPos);
 	vec3 H = normalize(V + L);
 	float distance = length(light.position - fragPos);
@@ -266,8 +319,8 @@ vec3 CalcPointLight(PointLight light, vec3 N, vec3 V, vec3 F0) {
 
 	vec3 F = fresnelSchlick(max(dot(H, V), 0), F0);
 
-	float NDF = DistributionGGX(N, H, material.roughness);
-	float G = GeometrySmith(N, V, L, material.roughness);
+	float NDF = DistributionGGX(N, H, props.roughness);
+	float G = GeometrySmith(N, V, L, props.roughness);
 
 	vec3 numerator = NDF * G * F;
 	float denomirator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0);
@@ -275,7 +328,7 @@ vec3 CalcPointLight(PointLight light, vec3 N, vec3 V, vec3 F0) {
 
 	vec3 kS = F;
 	vec3 kD = vec3(1.0) - kS;
-	kD *= 1.0 - material.metallic;
+	kD *= 1.0 - props.metallic;
 
 	float NdotL = max(dot(N, L), 0.0);
 	
@@ -286,10 +339,10 @@ vec3 CalcPointLight(PointLight light, vec3 N, vec3 V, vec3 F0) {
 		//shadow = PointLightShadowCalculation(light, 0.05);
 	}
 
-	return (kD * material.albedo / PI + specular) * radiance * NdotL*(1-shadow);
+	return (kD * props.albedo / PI + specular) * radiance * NdotL*(1-shadow);
 }
 
-vec3 CalcDirectionalLight(DirLight light, vec3 N, vec3 V, vec3 F0) {
+vec3 CalcDirectionalLight(DirLight light, vec3 N, vec3 V, vec3 F0, surfaceProperties props) {
 	vec3 L = normalize(light.direction);
 	vec3 H = normalize(V + L);
 	//float distance = length(light.position - fragPos);
@@ -297,8 +350,8 @@ vec3 CalcDirectionalLight(DirLight light, vec3 N, vec3 V, vec3 F0) {
 
 	vec3 F = fresnelSchlick(max(dot(H, V), 0), F0);
 
-	float NDF = DistributionGGX(N, H, material.roughness);
-	float G = GeometrySmith(N, V, L, material.roughness);
+	float NDF = DistributionGGX(N, H, props.roughness);
+	float G = GeometrySmith(N, V, L, props.roughness);
 
 	vec3 numerator = NDF * G * F;
 	float denomirator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0);
@@ -306,7 +359,7 @@ vec3 CalcDirectionalLight(DirLight light, vec3 N, vec3 V, vec3 F0) {
 
 	vec3 kS = F;
 	vec3 kD = vec3(1.0) - kS;
-	kD *= 1.0 - material.metallic;
+	kD *= 1.0 - props.metallic;
 	float shadow = 0.0;
 	if (light.castShadows) {
 		//float bias = max(0.05 * (1.0 - dot(N, lightDir)), 0.005);
@@ -315,10 +368,11 @@ vec3 CalcDirectionalLight(DirLight light, vec3 N, vec3 V, vec3 F0) {
 	}
 
 	float NdotL = max(dot(N, L), 0.0);
-	return (kD * material.albedo / PI + specular) * radiance * NdotL*(1-shadow);
+	return (kD * props.albedo / PI + specular) * radiance * NdotL*(1-shadow);
 }
 
-vec3 CalcSpotLight(SpotLight light, vec3 N, vec3 V, vec3 F0) {
+
+vec3 CalcSpotLight(SpotLight light, vec3 N, vec3 V, vec3 F0, surfaceProperties props) {
 	vec3 L = normalize(light.position - fragPos);
 	vec3 H = normalize(V + L);
 	float distance = length(light.position - fragPos);
@@ -331,8 +385,8 @@ vec3 CalcSpotLight(SpotLight light, vec3 N, vec3 V, vec3 F0) {
 	vec3 radiance = light.intensity * attenuation*spot_intensity;
 	vec3 F = fresnelSchlick(max(dot(H, V), 0), F0);
 
-	float NDF = DistributionGGX(N, H, material.roughness);
-	float G = GeometrySmith(N, V, L, material.roughness);
+	float NDF = DistributionGGX(N, H, props.roughness);
+	float G = GeometrySmith(N, V, L, props.roughness);
 
 	vec3 numerator = NDF * G * F;
 	float denomirator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0);
@@ -340,7 +394,7 @@ vec3 CalcSpotLight(SpotLight light, vec3 N, vec3 V, vec3 F0) {
 
 	vec3 kS = F;
 	vec3 kD = vec3(1.0) - kS;
-	kD *= 1.0 - material.metallic;
+	kD *= 1.0 - props.metallic;
 
 	float NdotL = max(dot(N, L), 0.0);
 
@@ -352,24 +406,37 @@ vec3 CalcSpotLight(SpotLight light, vec3 N, vec3 V, vec3 F0) {
 		//shadow = 0.7;
 	}
 
-	return (kD * material.albedo / PI + specular) * radiance * NdotL * (1 - shadow);
+	return (kD * props.albedo / PI + specular) * radiance * NdotL * (1 - shadow);
 }
 
 
+
 void main() {
+
+	surfaceProperties props = getSurfaceProperties();
+
 	vec3 N = normalize(normal);
+	if (material.hasNormal) {
+		N = texture(material.normalMap, texCoords).rgb;
+		N = normalize(N * 2.0 - 1.0);
+		N = normalize(TBN * N);
+	}
+	
+	//N = normalize(normal);
+	
 	vec3 V = normalize(viewPos - fragPos);
 
 	vec3 F0 = vec3(0.04);
-	F0 = mix(F0, material.albedo, material.metallic);
+	F0 = mix(F0, props.albedo, props.metallic);
 
 	vec3 L0 = vec3(0.0);
 
-	vec3 ambient = vec3(0.03) * material.albedo * material.ao;
+	vec3 ambient = vec3(0.03) * props.albedo * material.ao;
 	vec3 color = ambient;
-	color += CalcPointLight(pointlight, N, V, F0);
-	color += CalcDirectionalLight(dirlight, N, V, F0);
-	color += CalcSpotLight(spotlight, N, V, F0);
+	color += CalcPointLight(pointlight, N, V, F0, props);
+	color += CalcDirectionalLight(dirlight, N, V, F0, props);
+	color += CalcSpotLight(spotlight, N, V, F0, props);
+	color += props.emission * 1.3;
 	FragColor = vec4(color, 1.0);
 
 }

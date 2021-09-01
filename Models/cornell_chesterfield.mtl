@@ -14,7 +14,7 @@ Ks 0.5 0.5 0.5
 Ns 100
 map_Kd diffuse.png
 map_Ks specular.png
-map_Kn normal.png
+map_Bump normal.png
 disp height.png
 
 newmtl 2

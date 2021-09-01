@@ -16,8 +16,8 @@ void DirectionalLight::setUniforms(Shader& shader)
     shader.setUniformVec3("dirLight.direction", direction);
     shader.setUniform1f("dirLight.size", size);
     shader.setUniformInt("dirLight.castShadows", castsShadows);
-    shader.setUniformInt("dirLight.shadowMap", 4);
-    m_shadowMap.bindDepthTexture(4);
+    shader.setUniformInt("dirLight.shadowMap", 7);
+    m_shadowMap.bindDepthTexture(7);
 }
 
 void DirectionalLight::setUniformsPBR(Shader& shader)
@@ -27,8 +27,8 @@ void DirectionalLight::setUniformsPBR(Shader& shader)
     shader.setUniformVec3("dirlight.intensity", intensity);
     shader.setUniform1f("dirlight.size", size);
     shader.setUniformInt("dirlight.castShadows", castsShadows);
-    shader.setUniformInt("dirlight.shadowMap", 4);
-    m_shadowMap.bindDepthTexture(4);
+    shader.setUniformInt("dirlight.shadowMap", 7);
+    m_shadowMap.bindDepthTexture(7);
 }
 
 
@@ -161,10 +161,12 @@ void SpotLight::ImGuiControls()
         ImGui::SliderFloat("inner cutoff", &m_cutOff, 1.0f, m_outerCutOff);
         ImGui::SliderFloat("outer Cutoff cutoff", &m_outerCutOff, 1.0f, 89.0f);
 
+        //attenuation
         ImGui::SliderFloat("constant", &m_constant, 0.1f, 10.0f);
         ImGui::SliderFloat("linear", &m_linear, 0.0f, 5.0f);
         ImGui::SliderFloat("quadratic", &m_quadratic, 0.0f, 5.0f);
 
+        //shadows
         ImGui::Checkbox("casts shadows", &castsShadows);
         ImGui::SliderFloat("light size", &size, 0.0f, 1.0f);
         ImGui::InputFloat3("intensity", &m_intensity[0]);

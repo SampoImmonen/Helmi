@@ -17,6 +17,7 @@ File explorer is windows specific
 7. BVH building with Surface area heuristic and spatial median
 8. Simple whitted ray tracing with an area light
 9. Simple Scene editor
+10. PBR shading
 #### TO DO:
 1. path tracer for diffuse BRDF
 2. skeletal animation
@@ -32,6 +33,8 @@ File explorer is windows specific
 ![alt text](https://github.com/SampoImmonen/Helmi/blob/dockinggui/media/shadowstest.png)
 
 ![alt text](https://github.com/SampoImmonen/Helmi/blob/dockinggui/media/multimodel.png)
+
+![alt text](https://github.com/SampoImmonen/Helmi/blob/dockinggui/media/pbr.png)
 
 ## Bugs:
 

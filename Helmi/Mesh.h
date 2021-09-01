@@ -30,14 +30,16 @@ struct glMaterial {
 	std::string specular_map_name;
 	std::string normal_map_name;
 	std::string emission_map_name;
+	std::string metalness_map_name;
 
 	std::shared_ptr<Texture2D> m_diffuse_map;
 	std::shared_ptr<Texture2D> m_specular_map;
 	std::shared_ptr<Texture2D> m_normal_map;
 	std::shared_ptr<Texture2D> m_emission_map;
+	std::shared_ptr<Texture2D> m_metalness_map;
 
 	//PBR
-	float metallic = 0.9f;
+	float metallic = 0.0f;
 	float roughness = 0.3f;
 	float ao = 1.0f;
 

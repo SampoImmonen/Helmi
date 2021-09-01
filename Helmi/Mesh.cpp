@@ -72,10 +72,46 @@ void Mesh::SimpleDraw(Shader& shader)
 
 void Mesh::DrawPBR(Shader& shader)
 {
+
+	shader.UseProgram();
+	bool hasAlbedomap = !m_material.diffuse_map_name.empty();
+	bool hasRoughnessmap = !m_material.specular_map_name.empty();
+	bool hasNormalmap = !m_material.normal_map_name.empty();
+	bool hasEmissionMap = !m_material.emission_map_name.empty();
+	bool hasMetalnessMap = !m_material.metalness_map_name.empty();
+
 	shader.setUniformVec3("material.albedo", m_material.diffuse);
 	shader.setUniform1f("material.metallic", m_material.metallic);
 	shader.setUniform1f("material.roughness", m_material.roughness);
+	shader.setUniformVec3("material.specular", m_material.emission);
 	shader.setUniform1f("material.ao", m_material.ao);
+	shader.setUniformInt("material.hasAlbedo", hasAlbedomap);
+	shader.setUniformInt("material.diffuseMap", 0);
+	shader.setUniformInt("material.hasRoughness", hasRoughnessmap);
+	shader.setUniformInt("material.roughnessMap", 1);
+	shader.setUniformInt("material.hasNormal", hasNormalmap);
+	shader.setUniformInt("material.normalMap", 2);
+	shader.setUniformInt("material.hasEmission", hasEmissionMap);
+	shader.setUniformInt("material.emissionMap", 3);
+	shader.setUniformInt("material.hasMetalness", hasMetalnessMap);
+	shader.setUniformInt("material.metalnessMap", 4);
+
+	if (hasAlbedomap) {
+		m_material.m_diffuse_map->bind(0);
+	}
+	if (hasRoughnessmap) {
+		m_material.m_specular_map->bind(1);
+	}
+	if (hasNormalmap) {
+		m_material.m_normal_map->bind(2);
+	}
+	if (hasEmissionMap) {
+		m_material.m_emission_map->bind(3);
+	}
+	if (hasMetalnessMap) {
+		m_material.m_metalness_map->bind(4);
+	}
+
 	glBindVertexArray(VAO);
 	glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
 	glBindVertexArray(0);
