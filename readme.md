@@ -34,7 +34,11 @@ File explorer is windows specific
 
 ![alt text](https://github.com/SampoImmonen/Helmi/blob/dockinggui/media/multimodel.png)
 
-![alt text](https://github.com/SampoImmonen/Helmi/blob/dockinggui/media/pbr.png)
+![alt text](https://github.com/SampoImmonen/Helmi-Rendering-engine/blob/master/media/PBRbloom.png)
+
+![alt text](https://github.com/SampoImmonen/Helmi-Rendering-engine/blob/master/media/pbr.png)
+
+
 
 ## Bugs:
 
