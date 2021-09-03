@@ -163,6 +163,7 @@ private:
 	std::vector<std::unique_ptr<Light>> m_lights;
 	std::vector<Model> m_models;
 	CubeMap m_skybox;
+	HDRCubeMap m_HDRenvmap;
 	FrameBuffer m_fbo;
 	HDRFrameBuffer m_hdrFBO;
 	PingPongFrameBuffer m_pingpongBuffer;

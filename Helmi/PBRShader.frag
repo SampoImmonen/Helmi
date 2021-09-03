@@ -4,7 +4,9 @@ const float PI = 3.14159265359;
 const int num_pcf_samples = 64;
 const int num_blocker_samples = 16;
 
-out vec4 FragColor;
+layout(location = 0) out vec4 FragColor;
+layout(location = 1) out vec4 BrightColor;
+
 in vec3 normal;
 in vec3 fragPos;
 in vec2 texCoords;
@@ -13,6 +15,7 @@ in vec4 fragPosLightSpaceSpotLight;
 in mat3 TBN;
 
 
+uniform float bloomThreshold = 1.0;
 uniform vec3 viewPos;
 
 struct surfaceProperties {
@@ -436,7 +439,15 @@ void main() {
 	color += CalcPointLight(pointlight, N, V, F0, props);
 	color += CalcDirectionalLight(dirlight, N, V, F0, props);
 	color += CalcSpotLight(spotlight, N, V, F0, props);
-	color += props.emission * 1.3;
+	color += props.emission * 10.0;
 	FragColor = vec4(color, 1.0);
+
+	float brightness = dot(FragColor.rgb, vec3(0.2126, 0.7152, 0.0722));
+	if (brightness > bloomThreshold) {
+		BrightColor = vec4(FragColor.rgb, 1.0);
+	}
+	else {
+		BrightColor = vec4(0.0, 0.0, 0.0, 1.0);
+	}
 
 }

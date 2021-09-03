@@ -72,6 +72,7 @@ Application::Application()
 	initApp();
 	loadScene(MODELS + std::string("shadowstest.obj"));
 	m_skybox = CubeMap("textures/skybox/");
+	m_HDRenvmap = HDRCubeMap("textures/Milkyway/Milkyway_Light.hdr");
 	m_fbo = FrameBuffer(m_width, m_height);
 	m_hdrFBO = HDRFrameBuffer(m_width, m_height);
 	m_pingpongBuffer = PingPongFrameBuffer(m_width, m_height);
@@ -396,7 +397,7 @@ void Application::render()
 		if (m_bloomOn) {
 			if (ImGui::CollapsingHeader("bloom settings")) {
 				ImGui::InputInt("Number of blur iterations", &m_numBloomIterations);
-				ImGui::SliderFloat("bloom threshold", &m_bloomThreshold, 0.2f, 1.5f);
+				ImGui::InputFloat("bloom threshold", &m_bloomThreshold);
 				ImGui::Text("bloom brightness images");
 				ImGui::Image((ImTextureID)m_hdrFBO.getBloomTexture(), ImVec2(100, 100), ImVec2(0, 1), ImVec2(1, 0));
 			}
@@ -575,10 +576,7 @@ void Application::renderScenePBR(const glm::mat4& projection, const glm::mat4& v
 	m_shaders[9].setUniformMat4f("projection", projection);
 	m_shaders[9].setUniformMat4f("view", view);
 	m_shaders[9].setUniformVec3("viewPos", m_glcamera.Position);
-	for (int i = 0; i < lightpos.size(); ++i) {
-		m_shaders[9].setUniformVec3(("lightPositions[" + std::to_string(i) + "]").c_str(), lightpos[i]);
-		m_shaders[9].setUniformVec3(("lightColors[" + std::to_string(i) + "]").c_str(), glm::vec3(100.0f));
-	}
+	m_shaders[9].setUniform1f("bloomThreshold", m_bloomThreshold);
 	for (auto& model : m_models) {
 		model.DrawPBR(m_shaders[9]);
 	}

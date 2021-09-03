@@ -238,5 +238,11 @@
     <None Include="PBRShader.frag">
       <Filter>shaders</Filter>
     </None>
+    <None Include="RectToCubeMap.vert">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="RectToCubeMap.frag">
+      <Filter>shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

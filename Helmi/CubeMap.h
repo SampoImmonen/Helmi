@@ -18,7 +18,7 @@ private:
 	unsigned int VAO, VBO, EBO;
 
 public:
-	CubeMap(){}
+	CubeMap() = default;
 	CubeMap(const std::string& dir);
 	void bind();
 	void draw(Shader& shader, const glm::mat4& projection, const glm::mat4& view);
@@ -41,3 +41,21 @@ private:
 	int m_width, m_height;
 };
 
+//cubemap used for IBL in PBR shading
+class HDRCubeMap {
+public:
+	HDRCubeMap() = default;
+	HDRCubeMap(const std::string& filepath);
+
+	void bindRectTexture(int unit);
+private:
+
+	bool createRectTexture(const std::string& filepath);
+	bool createCubeMapFBO();
+	void createCubeMap(Shader& shader);
+
+	unsigned int m_textureId;
+	unsigned int m_captureFBO, m_captureRBO;
+	unsigned int m_envCubemap;
+	unsigned int m_cubeVAO, m_cubeVBO;
+};

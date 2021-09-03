@@ -279,6 +279,8 @@
     <None Include="PointLightDepthShader.geo" />
     <None Include="PointLightDepthShader.vert" />
     <None Include="PostProcessingBasic.frag" />
+    <None Include="RectToCubeMap.frag" />
+    <None Include="RectToCubeMap.vert" />
     <None Include="Shader.frag" />
     <None Include="Shader.vert" />
     <None Include="shaders\3DquadShader.frag" />
