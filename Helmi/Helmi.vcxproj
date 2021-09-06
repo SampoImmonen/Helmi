@@ -269,6 +269,8 @@
     <None Include="3DquadShader.frag" />
     <None Include="3DquadShader.vert" />
     <None Include="GaussianBlurShader.frag" />
+    <None Include="HDRSkyboxShader.frag" />
+    <None Include="HDRSkyboxShader.vert" />
     <None Include="ImageShader.frag" />
     <None Include="ImageShader.vert" />
     <None Include="lightShader.frag" />

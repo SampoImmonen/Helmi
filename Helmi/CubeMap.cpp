@@ -139,8 +139,8 @@ CubeMap::CubeMap(const std::string& dir)
 
 void CubeMap::bind()
 {
+	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
-
 }
 
 void CubeMap::draw(Shader& shader, const glm::mat4& projection, const glm::mat4& view)
@@ -148,6 +148,7 @@ void CubeMap::draw(Shader& shader, const glm::mat4& projection, const glm::mat4&
 	glDepthMask(GL_FALSE);
 	shader.UseProgram();
 	//setup uniforms
+	shader.setUniformInt("skybox", 0);
 	shader.setUniformMat4f("projection", projection);
 	shader.setUniformMat4f("view", glm::mat4(glm::mat3(view)));
 	glBindVertexArray(VAO);
@@ -197,17 +198,42 @@ void DepthCubeMapFBO::bindDepthTexture(int unit)
 	glBindTexture(GL_TEXTURE_CUBE_MAP, m_textureId);
 }
 
-HDRCubeMap::HDRCubeMap(const std::string& filepath)
+HDRCubeMap::HDRCubeMap(const std::string& filepath, Shader& shader)
 {
 	if (!createRectTexture(filepath)) {
 		std::cout << "failed to load HDRcubemap from " << filepath << "\n";
 		return;
 	}
+	glDepthFunc(GL_LEQUAL);
 	createCubeMapFBO();
+	createCubeMap(shader);
+
+}
+
+void HDRCubeMap::draw(Shader& shader, const glm::mat4& projection, const glm::mat4& view)
+{
+	glDepthMask(GL_FALSE);
+	shader.UseProgram();
+	//setup uniforms
+	shader.setUniformMat4f("projection", projection);
+	shader.setUniformMat4f("view", glm::mat4(glm::mat3(view)));
+	shader.setUniformInt("skybox", 0);
+	bindCubeMapTexture(0);
+	glBindVertexArray(m_cubeVAO);
+	glDrawArrays(GL_TRIANGLES, 0, 36);
+	glDepthMask(GL_TRUE);
 }
 
 void HDRCubeMap::bindRectTexture(int unit)
 {
+	glActiveTexture(GL_TEXTURE0 + unit);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, m_textureId);
+}
+
+void HDRCubeMap::bindCubeMapTexture(int unit)
+{
+	glActiveTexture(GL_TEXTURE0 + unit);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, m_envCubemap);
 }
 
 bool HDRCubeMap::createRectTexture(const std::string& filepath)
@@ -265,21 +291,13 @@ bool HDRCubeMap::createCubeMapFBO()
 void HDRCubeMap::createCubeMap(Shader& shader)
 {
 	//create geometry for HDR environment map
-	glGenVertexArrays(1, &m_cubeVAO);
 	glGenBuffers(1, &m_cubeVBO);
-	// fill buffer
-	glBindBuffer(GL_ARRAY_BUFFER, m_cubeVBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(HDRenvVertices), HDRenvVertices, GL_STATIC_DRAW);
-	// link vertex attributes
+	glGenVertexArrays(1, &m_cubeVAO);
 	glBindVertexArray(m_cubeVAO);
+	glBindBuffer(GL_ARRAY_BUFFER, m_cubeVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(skyboxVertices), skyboxVertices, GL_STATIC_DRAW);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
-	glEnableVertexAttribArray(2);
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindVertexArray(0);
 
 	glm::mat4 captureProjection = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 10.0f);
 	glm::mat4 captureViews[] = {

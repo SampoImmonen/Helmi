@@ -133,6 +133,7 @@ private:
 	void renderScene(const glm::mat4& projection, const glm::mat4& view);
 	void renderScenePBR(const glm::mat4& projection, const glm::mat4& view);
 	void renderToScreen();
+	void renderSkybox(const glm::mat4& projection, const glm::mat4& view);
 	
 
 	//utils

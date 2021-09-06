@@ -72,7 +72,6 @@ Application::Application()
 	initApp();
 	loadScene(MODELS + std::string("shadowstest.obj"));
 	m_skybox = CubeMap("textures/skybox/");
-	m_HDRenvmap = HDRCubeMap("textures/Milkyway/Milkyway_Light.hdr");
 	m_fbo = FrameBuffer(m_width, m_height);
 	m_hdrFBO = HDRFrameBuffer(m_width, m_height);
 	m_pingpongBuffer = PingPongFrameBuffer(m_width, m_height);
@@ -139,9 +138,15 @@ bool Application::loadScene(const std::string& filepath)
 	m_shaders.push_back(areaLightShader);
 	Shader pointShadowShader("shaders/PointLightDepthShader.vert", "shaders/PointLightDepthShader.frag", "shaders/PointLightDepthShader.geo"); //8
 	m_shaders.push_back(pointShadowShader);
-	Shader PBRShader("PBRShader.vert", "PBRShader.frag");
+	Shader PBRShader("PBRShader.vert", "PBRShader.frag"); // 9
 	m_shaders.push_back(PBRShader);
-																													   //load scene into rtformat
+	Shader HDREnvMapInitializationShader("RectToCubeMap.vert", "RectToCubeMap.frag"); // 10
+	m_shaders.push_back(HDREnvMapInitializationShader);
+	Shader hdrSkyboxShader("HDRSkyboxShader.vert", "HDRSkyboxShader.frag");
+	m_shaders.push_back(hdrSkyboxShader);
+	//load HDR environment map
+	m_HDRenvmap = HDRCubeMap("textures/Milkyway/Milkyway_small.hdr", HDREnvMapInitializationShader);
+	//load scene into rtformat
 	initHelmirt();
 	return true;
 }
@@ -523,6 +528,7 @@ void Application::renderScene(const glm::mat4& projection, const glm::mat4& view
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	//draw skybox
+	//renderSkybox(projection, view);
 	m_skybox.draw(m_shaders[1], projection, view);
 	//draw models
 	m_shaders[0].UseProgram();
@@ -562,8 +568,10 @@ void Application::renderScenePBR(const glm::mat4& projection, const glm::mat4& v
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+	m_HDRenvmap.draw(m_shaders[1], projection, view);
 	//draw skybox
-	m_skybox.draw(m_shaders[1], projection, view);
+	//renderSkybox(projection, view);
+	//m_skybox.draw(m_shaders[1], projection, view);
 	m_shaders[9].UseProgram();
 	//set common uniforms
 	m_lights[0]->setUniformsPBR(m_shaders[9]);
@@ -580,6 +588,7 @@ void Application::renderScenePBR(const glm::mat4& projection, const glm::mat4& v
 	for (auto& model : m_models) {
 		model.DrawPBR(m_shaders[9]);
 	}
+	//m_HDRenvmap.draw(m_shaders[11], projection, view);
 }
 
 void Application::renderToScreen()
@@ -599,6 +608,16 @@ void Application::renderToScreen()
 	//m_pingpongBuffer.bindTexture(0);
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 	m_fbo.unbind();
+}
+
+void Application::renderSkybox(const glm::mat4& projection, const glm::mat4& view)
+{
+	if (true) {
+		m_HDRenvmap.draw(m_shaders[1], projection, view);
+	}
+	else {
+		m_skybox.draw(m_shaders[1], projection, view);
+	}
 }
 
 void Application::reloadShaders()

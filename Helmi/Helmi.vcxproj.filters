@@ -244,5 +244,11 @@
     <None Include="RectToCubeMap.frag">
       <Filter>shaders</Filter>
     </None>
+    <None Include="HDRSkyboxShader.vert">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="HDRSkyboxShader.frag">
+      <Filter>shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

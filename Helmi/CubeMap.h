@@ -45,9 +45,11 @@ private:
 class HDRCubeMap {
 public:
 	HDRCubeMap() = default;
-	HDRCubeMap(const std::string& filepath);
+	HDRCubeMap(const std::string& filepath, Shader& shader);
 
+	void draw(Shader& shader, const glm::mat4& projection, const glm::mat4& view);
 	void bindRectTexture(int unit);
+	void bindCubeMapTexture(int unit);
 private:
 
 	bool createRectTexture(const std::string& filepath);
