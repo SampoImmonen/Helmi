@@ -39,9 +39,14 @@ File explorer is windows specific
 ![alt text](https://github.com/SampoImmonen/Helmi-Rendering-engine/blob/master/media/pbr.png)
 
 
-
+## Notes:
+#### PBR textures in OBJ files:
+- albedo = diffuse map (map_Kd)
+- roughness = specular map (map_Ks)
+- emission = emission map (map_Ke)
+- metalness = (map_Ns)
+- normal = (map_Bump)
 ## Bugs:
-
 1. bugs related to Imgui Controls
 2. Spotlight shadows do not work if position and direction is controlled by InputFloat3 instead of slider float (why??)
 

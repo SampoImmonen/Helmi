@@ -218,7 +218,7 @@ void HDRCubeMap::draw(Shader& shader, const glm::mat4& projection, const glm::ma
 	shader.setUniformMat4f("projection", projection);
 	shader.setUniformMat4f("view", glm::mat4(glm::mat3(view)));
 	shader.setUniformInt("skybox", 0);
-	bindCubeMapTexture(0);
+	bindEnvMapTexture(0);
 	glBindVertexArray(m_cubeVAO);
 	glDrawArrays(GL_TRIANGLES, 0, 36);
 	glDepthMask(GL_TRUE);
@@ -230,10 +230,69 @@ void HDRCubeMap::bindRectTexture(int unit)
 	glBindTexture(GL_TEXTURE_CUBE_MAP, m_textureId);
 }
 
-void HDRCubeMap::bindCubeMapTexture(int unit)
+void HDRCubeMap::bindEnvMapTexture(int unit)
 {
 	glActiveTexture(GL_TEXTURE0 + unit);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, m_envCubemap);
+}
+
+void HDRCubeMap::bindIBLTexture(int unit)
+{
+	glActiveTexture(GL_TEXTURE0 + unit);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, m_IBLcubeMap);
+}
+
+void HDRCubeMap::convoluteCubeMap(Shader& shader)
+{
+	//create cubemap texture and FBO for convoluted image
+	glGenTextures(1, &m_IBLcubeMap);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, m_IBLcubeMap);
+	for (unsigned int i = 0; i < 6; ++i)
+	{
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F, 32, 32, 0,
+			GL_RGB, GL_FLOAT, nullptr);
+	}
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+
+	glm::mat4 captureProjection = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 10.0f);
+	glm::mat4 captureViews[] = {
+		glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
+		glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(-1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
+		glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  1.0f,  0.0f), glm::vec3(0.0f,  0.0f,  1.0f)),
+		glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f,  0.0f), glm::vec3(0.0f,  0.0f, -1.0f)),
+		glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  0.0f,  1.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
+		glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  0.0f, -1.0f), glm::vec3(0.0f, -1.0f,  0.0f))
+	};
+
+	glBindFramebuffer(GL_FRAMEBUFFER, m_captureFBO);
+	glBindRenderbuffer(GL_RENDERBUFFER, m_captureRBO);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, 32, 32);
+	//convolute
+	shader.UseProgram();
+	shader.setUniformInt("environmentMap", 0);
+	shader.setUniformMat4f("projection", captureProjection);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, m_envCubemap);
+
+	glViewport(0, 0, 32, 32);
+	glBindFramebuffer(GL_FRAMEBUFFER, m_captureFBO);
+	for (unsigned int i = 0; i < 6; ++i)
+	{
+		shader.setUniformMat4f("view", captureViews[i]);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+			GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, m_IBLcubeMap, 0);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glBindVertexArray(m_cubeVAO);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+		glBindVertexArray(0);
+	}
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
 }
 
 bool HDRCubeMap::createRectTexture(const std::string& filepath)

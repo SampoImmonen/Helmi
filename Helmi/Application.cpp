@@ -142,10 +142,11 @@ bool Application::loadScene(const std::string& filepath)
 	m_shaders.push_back(PBRShader);
 	Shader HDREnvMapInitializationShader("RectToCubeMap.vert", "RectToCubeMap.frag"); // 10
 	m_shaders.push_back(HDREnvMapInitializationShader);
-	Shader hdrSkyboxShader("HDRSkyboxShader.vert", "HDRSkyboxShader.frag");
-	m_shaders.push_back(hdrSkyboxShader);
+	Shader ConvolutionShader("EnvMapConvolution.vert", "EnvMapConvolution.frag");
+	m_shaders.push_back(ConvolutionShader);
 	//load HDR environment map
 	m_HDRenvmap = HDRCubeMap("textures/Milkyway/Milkyway_small.hdr", HDREnvMapInitializationShader);
+	m_HDRenvmap.convoluteCubeMap(ConvolutionShader);
 	//load scene into rtformat
 	initHelmirt();
 	return true;
@@ -585,10 +586,11 @@ void Application::renderScenePBR(const glm::mat4& projection, const glm::mat4& v
 	m_shaders[9].setUniformMat4f("view", view);
 	m_shaders[9].setUniformVec3("viewPos", m_glcamera.Position);
 	m_shaders[9].setUniform1f("bloomThreshold", m_bloomThreshold);
+	m_shaders[9].setUniformInt("irradianceMap", 8);
+	m_HDRenvmap.bindIBLTexture(8);
 	for (auto& model : m_models) {
 		model.DrawPBR(m_shaders[9]);
 	}
-	//m_HDRenvmap.draw(m_shaders[11], projection, view);
 }
 
 void Application::renderToScreen()

@@ -96,6 +96,7 @@ void Shader::compileShaders(void)
 	if (!geometryPath.empty()) {
 		glDeleteShader(GeometryShader);
 	}
+	//std::cout << program << "\n";
 }
 
 void Shader::setUniform1f(const char* name, float v0)

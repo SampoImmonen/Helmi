@@ -250,5 +250,11 @@
     <None Include="HDRSkyboxShader.frag">
       <Filter>shaders</Filter>
     </None>
+    <None Include="EnvMapConvolution.frag">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="EnvMapConvolution.vert">
+      <Filter>shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

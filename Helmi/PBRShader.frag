@@ -17,6 +17,7 @@ in mat3 TBN;
 
 uniform float bloomThreshold = 1.0;
 uniform vec3 viewPos;
+uniform samplerCube irradianceMap;
 
 struct surfaceProperties {
 	vec3 albedo;
@@ -209,6 +210,11 @@ surfaceProperties getSurfaceProperties() {
 //functions used for cook-terrance BRDF
 vec3 fresnelSchlick(float cosTheta, vec3 F0) {
 	return F0 + (1.0 - F0) * pow(max(1.0 - cosTheta, 0.0), 5.0);
+}
+
+vec3 fresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness)
+{
+	return F0 + (max(vec3(1.0 - roughness), F0) - F0) * pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
 }
 
 float DistributionGGX(vec3 N, vec3 H, float roughness)
@@ -434,7 +440,12 @@ void main() {
 
 	vec3 L0 = vec3(0.0);
 
-	vec3 ambient = vec3(0.03) * props.albedo * material.ao;
+	vec3 kS = fresnelSchlickRoughness(max(dot(N, V), 0.0), F0, props.roughness);
+	vec3 kD = 1.0 - kS;
+	vec3 irradiance = texture(irradianceMap, N).rgb;
+	vec3 diffuse = irradiance * props.albedo;
+	vec3 ambient = (kD * diffuse) * material.ao;
+
 	vec3 color = ambient;
 	color += CalcPointLight(pointlight, N, V, F0, props);
 	color += CalcDirectionalLight(dirlight, N, V, F0, props);
