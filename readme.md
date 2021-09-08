@@ -38,6 +38,8 @@ File explorer is windows specific
 
 ![alt text](https://github.com/SampoImmonen/Helmi-Rendering-engine/blob/master/media/pbr.png)
 
+![alt text](https://github.com/SampoImmonen/Helmi-Rendering-engine/blob/master/media/PBRspecular.png)
+
 
 ## Notes:
 #### PBR textures in OBJ files:

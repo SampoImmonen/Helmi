@@ -39,8 +39,8 @@ struct glMaterial {
 	std::shared_ptr<Texture2D> m_metalness_map;
 
 	//PBR
-	float metallic = 0.0f;
-	float roughness = 0.3f;
+	float metallic = 0.9f;
+	float roughness = 0.1f;
 	float ao = 1.0f;
 
 	float shininess = 1.0f;

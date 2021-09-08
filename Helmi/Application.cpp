@@ -144,9 +144,16 @@ bool Application::loadScene(const std::string& filepath)
 	m_shaders.push_back(HDREnvMapInitializationShader);
 	Shader ConvolutionShader("EnvMapConvolution.vert", "EnvMapConvolution.frag");
 	m_shaders.push_back(ConvolutionShader);
+	Shader PrefilterShader("IBLPrefilterShader.vert", "IBLPrefilterShader.frag");
+	m_shaders.push_back(PrefilterShader);
+	Shader BRDFConvolutionShader("BRDFConvolutionShader.vert", "BRDFConvolutionShader.frag");
+	m_shaders.push_back(BRDFConvolutionShader);
+
 	//load HDR environment map
-	m_HDRenvmap = HDRCubeMap("textures/Milkyway/Milkyway_small.hdr", HDREnvMapInitializationShader);
+	m_HDRenvmap = HDRCubeMap("textures/Walk_Of_Fame/Mans_Outside_2k.hdr", HDREnvMapInitializationShader);
 	m_HDRenvmap.convoluteCubeMap(ConvolutionShader);
+	m_HDRenvmap.createPrefilterMap(PrefilterShader);
+	m_HDRenvmap.createBRDFLUT(BRDFConvolutionShader);
 	//load scene into rtformat
 	initHelmirt();
 	return true;
@@ -587,7 +594,11 @@ void Application::renderScenePBR(const glm::mat4& projection, const glm::mat4& v
 	m_shaders[9].setUniformVec3("viewPos", m_glcamera.Position);
 	m_shaders[9].setUniform1f("bloomThreshold", m_bloomThreshold);
 	m_shaders[9].setUniformInt("irradianceMap", 8);
+	m_shaders[9].setUniformInt("prefilterMap", 9);
+	m_shaders[9].setUniformInt("brdfLUT", 10);
 	m_HDRenvmap.bindIBLTexture(8);
+	m_HDRenvmap.bindPrefilterTexture(9);
+	m_HDRenvmap.bindBRDFLUT(10);
 	for (auto& model : m_models) {
 		model.DrawPBR(m_shaders[9]);
 	}

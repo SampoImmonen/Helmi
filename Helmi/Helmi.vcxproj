@@ -268,11 +268,15 @@
   <ItemGroup>
     <None Include="3DquadShader.frag" />
     <None Include="3DquadShader.vert" />
+    <None Include="BRDFConvolutionShader.frag" />
+    <None Include="BRDFConvolutionShader.vert" />
     <None Include="EnvMapConvolution.frag" />
     <None Include="EnvMapConvolution.vert" />
     <None Include="GaussianBlurShader.frag" />
     <None Include="HDRSkyboxShader.frag" />
     <None Include="HDRSkyboxShader.vert" />
+    <None Include="IBLPrefilterShader.frag" />
+    <None Include="IBLPrefilterShader.vert" />
     <None Include="ImageShader.frag" />
     <None Include="ImageShader.vert" />
     <None Include="lightShader.frag" />

@@ -18,6 +18,8 @@ in mat3 TBN;
 uniform float bloomThreshold = 1.0;
 uniform vec3 viewPos;
 uniform samplerCube irradianceMap;
+uniform samplerCube prefilterMap;
+uniform sampler2D brdfLUT;
 
 struct surfaceProperties {
 	vec3 albedo;
@@ -433,18 +435,28 @@ void main() {
 	
 	//N = normalize(normal);
 	
-	vec3 V = normalize(viewPos - fragPos);
 
+
+	vec3 V = normalize(viewPos - fragPos);
 	vec3 F0 = vec3(0.04);
 	F0 = mix(F0, props.albedo, props.metallic);
-
 	vec3 L0 = vec3(0.0);
 
+	//indirect ambient
 	vec3 kS = fresnelSchlickRoughness(max(dot(N, V), 0.0), F0, props.roughness);
 	vec3 kD = 1.0 - kS;
 	vec3 irradiance = texture(irradianceMap, N).rgb;
 	vec3 diffuse = irradiance * props.albedo;
-	vec3 ambient = (kD * diffuse) * material.ao;
+
+	//indirect specular
+	vec3 R = reflect(-V, N);
+	const float MAX_REFLECTION_LOD = 4.0;
+	vec3 prefiltercolor = textureLod(prefilterMap, R, props.roughness * MAX_REFLECTION_LOD).rgb;
+	vec3 F = fresnelSchlickRoughness(max(dot(N, V), 0.0), F0, props.roughness);
+	vec2 envBRDF = texture(brdfLUT, vec2(max(dot(N, V), 0.0), props.roughness)).rg;
+	vec3 specular = prefiltercolor * (F * envBRDF.x + envBRDF.y);
+
+	vec3 ambient = (kD * diffuse + specular) * material.ao;
 
 	vec3 color = ambient;
 	color += CalcPointLight(pointlight, N, V, F0, props);

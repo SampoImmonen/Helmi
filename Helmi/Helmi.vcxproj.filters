@@ -256,5 +256,17 @@
     <None Include="EnvMapConvolution.vert">
       <Filter>shaders</Filter>
     </None>
+    <None Include="IBLPrefilterShader.vert">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="IBLPrefilterShader.frag">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="BRDFConvolutionShader.vert">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="BRDFConvolutionShader.frag">
+      <Filter>shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

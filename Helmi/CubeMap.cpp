@@ -1,6 +1,8 @@
 #include "CubeMap.h"
 
 
+
+//class with static functions to handle rendering basic primitives????
 const float skyboxVertices[] = {
 	// positions          
 	-1.0f,  1.0f, -1.0f,
@@ -89,6 +91,14 @@ const float HDRenvVertices[] = {
 	 1.0f,  1.0f,  1.0f,  0.0f,  1.0f,  0.0f, 1.0f, 0.0f, // bottom-right
 	-1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 1.0f, // top-left
 	-1.0f,  1.0f,  1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 0.0f  // bottom-left        
+};
+
+const float quadVertices[] = {
+	// positions        // texture Coords
+	-1.0f,  1.0f, 0.0f, 0.0f, 1.0f,
+	-1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
+	 1.0f,  1.0f, 0.0f, 1.0f, 1.0f,
+	 1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
 };
 
 
@@ -242,6 +252,57 @@ void HDRCubeMap::bindIBLTexture(int unit)
 	glBindTexture(GL_TEXTURE_CUBE_MAP, m_IBLcubeMap);
 }
 
+void HDRCubeMap::bindPrefilterTexture(int unit)
+{
+	glActiveTexture(GL_TEXTURE0 + unit);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, m_prefilterMap);
+}
+
+void HDRCubeMap::bindBRDFLUT(int unit)
+{
+	glActiveTexture(GL_TEXTURE0 + unit);
+	glBindTexture(GL_TEXTURE_2D, m_BRDFLUTtex);
+}
+
+void HDRCubeMap::createBRDFLUT(Shader& shader)
+{
+	
+	//create QuadVAO
+	glGenVertexArrays(1, &m_quadVAO);
+	glGenBuffers(1, &m_quadVBO);
+	glBindVertexArray(m_quadVAO);
+	glBindBuffer(GL_ARRAY_BUFFER, m_quadVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+
+	
+	glGenTextures(1, &m_BRDFLUTtex);
+
+	// pre-allocate enough memory for the LUT texture.
+	glBindTexture(GL_TEXTURE_2D, m_BRDFLUTtex);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RG16F, 512, 512, 0, GL_RG, GL_FLOAT, 0);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, m_captureFBO);
+	glBindRenderbuffer(GL_RENDERBUFFER, m_captureRBO);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, 512, 512);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_BRDFLUTtex, 0);
+	glViewport(0, 0, 512, 512);
+	shader.UseProgram();
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glBindVertexArray(m_quadVAO);
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+	glBindVertexArray(0);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+}
+
 void HDRCubeMap::convoluteCubeMap(Shader& shader)
 {
 	//create cubemap texture and FBO for convoluted image
@@ -290,6 +351,70 @@ void HDRCubeMap::convoluteCubeMap(Shader& shader)
 		glBindVertexArray(m_cubeVAO);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 		glBindVertexArray(0);
+	}
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+}
+
+void HDRCubeMap::createPrefilterMap(Shader& shader)
+{
+	//generate cubemap texture
+	glGenTextures(1, &m_prefilterMap);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, m_prefilterMap);
+	for (unsigned int i = 0; i < 6; ++i)
+	{
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F, 128, 128, 0, GL_RGB, GL_FLOAT, nullptr);
+	}
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
+		
+	//create prefilter mipmap levels
+	
+	glm::mat4 captureProjection = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 10.0f);
+	glm::mat4 captureViews[] = {
+		glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
+		glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(-1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
+		glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  1.0f,  0.0f), glm::vec3(0.0f,  0.0f,  1.0f)),
+		glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f,  0.0f), glm::vec3(0.0f,  0.0f, -1.0f)),
+		glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  0.0f,  1.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
+		glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  0.0f, -1.0f), glm::vec3(0.0f, -1.0f,  0.0f))
+	};
+	
+	shader.UseProgram();
+	shader.setUniformInt("environmentMap", 0);
+	shader.setUniformMat4f("projection", captureProjection);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, m_envCubemap);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, m_captureFBO);
+	unsigned int maxMipLevels = 5;
+	for (unsigned int mip = 0; mip < maxMipLevels; ++mip)
+	{
+		// reisze framebuffer according to mip-level size.
+		unsigned int mipWidth = 128 * std::pow(0.5, mip);
+		unsigned int mipHeight = 128 * std::pow(0.5, mip);
+		glBindRenderbuffer(GL_RENDERBUFFER, m_captureRBO);
+		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, mipWidth, mipHeight);
+		glViewport(0, 0, mipWidth, mipHeight);
+
+		float roughness = (float)mip / (float)(maxMipLevels - 1);
+		shader.setUniform1f("roughness", roughness);
+		for (unsigned int i = 0; i < 6; ++i)
+		{
+			shader.setUniformMat4f("view", captureViews[i]);
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+				GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, m_prefilterMap, mip);
+
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+			glBindVertexArray(m_cubeVAO);
+			glDrawArrays(GL_TRIANGLES, 0, 36);
+			glBindVertexArray(0);
+		}
 	}
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 

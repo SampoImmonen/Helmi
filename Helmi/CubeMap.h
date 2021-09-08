@@ -51,17 +51,25 @@ public:
 	void bindRectTexture(int unit);
 	void bindEnvMapTexture(int unit);
 	void bindIBLTexture(int unit);
+	void bindPrefilterTexture(int unit);
+	void bindBRDFLUT(int unit);
+	void createBRDFLUT(Shader& shader);
 	void convoluteCubeMap(Shader& shader);
-
+	void createPrefilterMap(Shader& shader);
 private:
 
 	bool createRectTexture(const std::string& filepath);
 	bool createCubeMapFBO();
 	void createCubeMap(Shader& shader);
 	
+	
 
 	unsigned int m_textureId;
 	unsigned int m_captureFBO, m_captureRBO;
 	unsigned int m_envCubemap, m_IBLcubeMap;
 	unsigned int m_cubeVAO, m_cubeVBO;
+	unsigned int m_quadVAO, m_quadVBO;
+	unsigned int m_prefilterMap;
+	unsigned int m_BRDFLUTtex;
+
 };
