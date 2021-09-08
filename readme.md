@@ -17,14 +17,14 @@ File explorer is windows specific
 7. BVH building with Surface area heuristic and spatial median
 8. Simple whitted ray tracing with an area light
 9. Simple Scene editor
-10. PBR shading
+10. PBR shading with Image-based lighting
 #### TO DO:
 1. path tracer for diffuse BRDF
 2. skeletal animation
 3. scene editor camera
 4. scene serialization
-5. real-time pbr shading
-6. Icons for light positions
+5. Icons for light positions
+6. material editor
 ## images:
 ![alt text](https://github.com/SampoImmonen/Helmi/blob/dockinggui/media/chesterfield.png)
 
