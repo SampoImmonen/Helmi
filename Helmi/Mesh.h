@@ -10,13 +10,17 @@
 #include "Shader.h"
 #include "Texture2D.h"
 
-
+constexpr unsigned int MAX_BONE_INFLUENCE = 4;
 
 struct Vertex {
 	glm::vec3 Position;
 	glm::vec3 Normal;
 	glm::vec2 TexCoords;
 	glm::vec3 Tangent;
+
+	//skeletal animation attributes
+	int BoneIDs[MAX_BONE_INFLUENCE];
+	float Weights[MAX_BONE_INFLUENCE];
 };
 
 
@@ -39,7 +43,7 @@ struct glMaterial {
 	std::shared_ptr<Texture2D> m_metalness_map;
 
 	//PBR
-	float metallic = 0.9f;
+	float metallic = 0.7f;
 	float roughness = 0.1f;
 	float ao = 1.0f;
 

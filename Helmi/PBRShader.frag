@@ -462,7 +462,7 @@ void main() {
 	color += CalcPointLight(pointlight, N, V, F0, props);
 	color += CalcDirectionalLight(dirlight, N, V, F0, props);
 	color += CalcSpotLight(spotlight, N, V, F0, props);
-	color += props.emission * 10.0;
+	color += props.emission * 200.0;
 	FragColor = vec4(color, 1.0);
 
 	float brightness = dot(FragColor.rgb, vec3(0.2126, 0.7152, 0.0722));

@@ -1,24 +1,5 @@
 #include "Application.h"
 
-//put these where???
-void CheckOpenGLError(const char* stmt, const char* fname, int line)
-{
-	GLenum err = glGetError();
-	if (err != GL_NO_ERROR)
-	{
-		printf("OpenGL error %08x, at %s:%i - for %s\n", err, fname, line, stmt);
-		abort();
-	}
-}
-
-#ifdef _DEBUG
-#define GL_CHECK(stmt) do { \
-            stmt; \
-            CheckOpenGLError(#stmt, __FILE__, __LINE__); \
-        } while (0)
-#else
-#define GL_CHECK(stmt) stmt
-#endif
 
 //used to render texture quad to screen
 const float quadVertices[] = {
@@ -70,7 +51,7 @@ Application::Application()
 {
 	
 	initApp();
-	loadScene(MODELS + std::string("shadowstest.obj"));
+	loadScene(MODELS + std::string("stormtrooper/scene.gltf"));
 	m_skybox = CubeMap("textures/skybox/");
 	m_fbo = FrameBuffer(m_width, m_height);
 	m_hdrFBO = HDRFrameBuffer(m_width, m_height);
@@ -113,6 +94,10 @@ bool Application::loadScene(const std::string& filepath)
 {
 	//at the moment hardcoded
 	m_models.push_back(Model(filepath.c_str()));
+	Animation storm(filepath, &m_models[0]);
+	m_animation = storm;
+	m_animator = std::make_unique<Animator>(Animator(&m_animation));
+	//m_animation.getBoneCount();
 	//DirectionalLight dir(glm::vec3(-1.0f, -1.0f, 1.0f));
 	std::unique_ptr<Light> ptr = std::make_unique<DirectionalLight>(DirectionalLight(glm::vec3(-2.0f, 4.0f, -1.0f)));
 	std::unique_ptr<Light> ptr2 = std::make_unique<SpotLight>(SpotLight(glm::vec3(0.0f, 4.0f, 0.0f), glm::vec3(2.0f, 0.0f, 2.0f)));
@@ -536,8 +521,10 @@ void Application::renderScene(const glm::mat4& projection, const glm::mat4& view
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	//draw skybox
-	//renderSkybox(projection, view);
 	m_skybox.draw(m_shaders[1], projection, view);
+	
+	//Calculate Animation hardcoded for start
+	m_animator->updateAnimation(m_fpsinfo.deltatime*12.0f);
 	//draw models
 	m_shaders[0].UseProgram();
 	m_lights[0]->setUniforms(m_shaders[0]);
@@ -555,6 +542,12 @@ void Application::renderScene(const glm::mat4& projection, const glm::mat4& view
 	m_shaders[0].setUniform1f("bloomThreshold", m_bloomThreshold);
 	//m_shaders[0].setUniformInt("shadowMap", 3);
 	//m_shadowmap.bindDepthTexture(3);
+
+	auto transforms = m_animator->getfinalBoneMatrices();
+	for (int i = 0; i < transforms.size(); ++i) {
+		m_shaders[0].setUniformMat4f(("finalBonesMatrices[" + std::to_string(i) + "]").c_str(), transforms[i]);
+	}
+
 	for (auto& model : m_models) {
 		model.Draw(m_shaders[0]);
 	}

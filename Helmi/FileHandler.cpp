@@ -2,6 +2,7 @@
 
 std::string FileHandler::openFilePath(const char* filter, HWND owner)
 {
+	//returns empty string if canceled
 	OPENFILENAMEA ofn;
 	CHAR fileName[MAX_PATH] = {0};
 	ZeroMemory(&ofn, sizeof(ofn));

@@ -122,11 +122,10 @@ void Model::loadModel(const char *path)
 
 	
 	std::cout << "Loading Model: " << path << "\n";
-	
-
 	Assimp::Importer import;
-	const aiScene* scene = import.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenNormals | aiProcess_CalcTangentSpace | aiProcess_OptimizeMeshes | aiProcess_PreTransformVertices);
-	AI_CONFIG_PP_PTV_NORMALIZE;
+	//aiPreTransformVertices flag gives wrong number of bones!!!!!!!!!!!
+	const aiScene* scene = import.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenNormals | aiProcess_CalcTangentSpace);
+	//AI_CONFIG_PP_PTV_NORMALIZE;
 	if (!scene | scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
 		std::cout << "ERROR LOADING MODEL: " << path << "\n";
 		std::cout << "ASSIMP::ERROR " << import.GetErrorString() << "\n";
@@ -151,9 +150,12 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
 	std::vector<Vertex> vertices;
 	std::vector<unsigned int> indices;
 	
+	//std::cout << mesh->mNumBones << "\n";
 	for (int i = 0; i < mesh->mNumVertices; ++i) {
 		Vertex vertex;
+		setVertexBoneDataToDefault(vertex);
 		glm::vec3 vector;
+		
 		vector.x = mesh->mVertices[i].x;
 		vector.y = mesh->mVertices[i].y;
 		vector.z = mesh->mVertices[i].z;
@@ -247,6 +249,7 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
 
 	}
 
+	ExtractBoneWeightForVertices(vertices, mesh, scene);
 	return Mesh(vertices, indices, mat);
 }
 
@@ -263,10 +266,193 @@ void Model::setUniforms(Shader& shader)
 	shader.setUniformMat4f("model", translationMatrix*rotationMatrix*scaleMatrix);
 }
 
+void Model::setVertexBoneDataToDefault(Vertex& vertex)
+{
+	for (int i = 0; i < MAX_BONE_INFLUENCE; i++)
+	{
+		vertex.BoneIDs[i] = -1;
+		vertex.Weights[i] = 0.0f;
+	}
+}
+
+void Model::ExtractBoneWeightForVertices(std::vector<Vertex>& vertices, aiMesh* mesh, const aiScene* scene)
+{
+	for (int boneIndex = 0; boneIndex < mesh->mNumBones; ++boneIndex)
+	{
+		int boneID = -1;
+		std::string boneName = mesh->mBones[boneIndex]->mName.C_Str();
+		if (m_boneInfoMap.find(boneName) == m_boneInfoMap.end())
+		{
+			BoneInfo newBoneInfo;
+			newBoneInfo.id = m_bonecounter;
+			newBoneInfo.offset = AssimpGLMHelpers::ConvertMatrixToGLMFormat(
+				mesh->mBones[boneIndex]->mOffsetMatrix);
+			m_boneInfoMap[boneName] = newBoneInfo;
+			boneID = m_bonecounter;
+			m_bonecounter++;
+		}
+		else
+		{
+			boneID = m_boneInfoMap[boneName].id;
+		}
+		assert(boneID != -1);
+		auto weights = mesh->mBones[boneIndex]->mWeights;
+		int numWeights = mesh->mBones[boneIndex]->mNumWeights;
+
+		int max = 0;
+		for (int weightIndex = 0; weightIndex < numWeights; ++weightIndex)
+		{
+			int vertexId = weights[weightIndex].mVertexId;
+			if (vertexId > max) {
+				max = vertexId;
+			}
+			float weight = weights[weightIndex].mWeight;
+			assert(vertexId <= vertices.size());
+			//otherwise sets vertexId==0 weigths to 0sd
+			if (vertexId == 0 && weight==0.0f) continue;
+			SetVertexBoneData(vertices[vertexId], boneID, weight);
+		}
+	}
+}
+
+void Model::SetVertexBoneData(Vertex& vertex, int boneID, float weight)
+{
+	for (int i = 0; i < MAX_BONE_INFLUENCE; ++i)
+	{
+		if (vertex.BoneIDs[i] < 0)
+		{
+			vertex.Weights[i] = weight;
+			vertex.BoneIDs[i] = boneID;
+			break;
+		}
+	}
+}
+
 void Model::simpleDraw(Shader& shader)
 {
 	setUniforms(shader);
 	for (auto& mesh : meshes) {
 		mesh.SimpleDraw(shader);
 	}
+}
+
+Animation::Animation(const std::string& animationPath, Model* model)
+{
+	Assimp::Importer importer;
+	const aiScene* scene = importer.ReadFile(animationPath, aiProcess_Triangulate);
+	assert(scene && scene->mRootNode);
+	auto animation = scene->mAnimations[0];
+	m_duration = animation->mDuration;
+	m_ticksPerSecond = animation->mTicksPerSecond;
+	aiMatrix4x4 globalTransformation = scene->mRootNode->mTransformation;
+	globalTransformation = globalTransformation.Inverse();
+	readHierarchyData(m_rootNode, scene->mRootNode);
+	readMissingBones(animation, *model);
+}
+
+Bone* Animation::findBone(const std::string& name)
+{
+	auto iter = std::find_if(m_bones.begin(), m_bones.end(),
+		[&](const Bone& Bone)
+		{
+			return Bone.getBoneName() == name;
+		}
+	);
+	if (iter == m_bones.end()) return nullptr;
+	else return &(*iter);
+}
+
+void Animation::readMissingBones(const aiAnimation* animation, Model& model)
+{
+	int size = animation->mNumChannels;
+
+	auto& boneInfoMap = model.getBoneInfoMap();//getting m_BoneInfoMap from Model class
+	int& boneCount = model.getBoneCount(); //getting the m_BoneCounter from Model class
+
+	//reading channels(bones engaged in an animation and their keyframes)
+	for (int i = 0; i < size; i++)
+	{
+		auto channel = animation->mChannels[i];
+		std::string boneName = channel->mNodeName.data;
+
+		if (boneInfoMap.find(boneName) == boneInfoMap.end())
+		{
+			boneInfoMap[boneName].id = boneCount;
+			boneCount++;
+		}
+		m_bones.push_back(Bone(channel->mNodeName.data,
+			boneInfoMap[channel->mNodeName.data].id, channel));
+	}
+
+	m_boneInfoMap = boneInfoMap;
+}
+
+void Animation::readHierarchyData(AssimpNodeData& dest, const aiNode* src)
+{
+	assert(src);
+
+	dest.name = src->mName.data;
+	dest.transformation = AssimpGLMHelpers::ConvertMatrixToGLMFormat(src->mTransformation);
+	dest.childrenCount = src->mNumChildren;
+
+	for (int i = 0; i < src->mNumChildren; i++)
+	{
+		AssimpNodeData newData;
+		readHierarchyData(newData, src->mChildren[i]);
+		dest.children.push_back(newData);
+	}
+}
+
+Animator::Animator(Animation* animation) {
+	m_currentTime = 0.0f;
+	m_currentAnimation = animation;
+	m_finalBoneMatrices.reserve(100);
+
+	for (int i = 0; i < 100; ++i) {
+		m_finalBoneMatrices.push_back(glm::mat4(1.0f));
+	}
+}
+
+void Animator::updateAnimation(float dt) {
+	m_deltatime = dt;
+	if (m_currentAnimation) {
+		m_currentTime += m_currentAnimation->getTicksPerSecond() * dt;
+		m_currentTime = fmod(m_currentTime, m_currentAnimation->getDuration());
+		calculateBoneTransform(&m_currentAnimation->getRootNode(), glm::mat4(1.0f));
+	}
+}
+
+void Animator::playAnimation(Animation* pAnimation) {
+	m_currentAnimation = pAnimation;
+	m_currentTime = 0.0f;
+}
+
+void Animator::calculateBoneTransform(const AssimpNodeData* node, glm::mat4 parentTransform) {
+	
+
+	std::string nodeName = node->name;
+	
+	glm::mat4 nodeTransform = node->transformation;
+
+	Bone* Bone = m_currentAnimation->findBone(nodeName);
+
+	//std::cout << Bone->getBoneID() << "\n";
+	if (Bone)
+	{
+		Bone->Update(m_currentTime);
+		nodeTransform = Bone->getLocalTransform();
+	}
+
+	glm::mat4 globalTransformation = parentTransform * nodeTransform;
+
+	auto boneInfoMap = m_currentAnimation->getBoneIDMap();
+	if (boneInfoMap.find(nodeName) != boneInfoMap.end())
+	{
+		int index = boneInfoMap[nodeName].id;
+		glm::mat4 offset = boneInfoMap[nodeName].offset;
+		m_finalBoneMatrices[index] = globalTransformation * offset;
+	}
+
+	for (int i = 0; i < node->childrenCount; i++)
+		calculateBoneTransform(&node->children[i], globalTransformation);
 }
