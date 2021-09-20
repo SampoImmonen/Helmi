@@ -4,6 +4,7 @@
 Model::Model(const char* path): position(glm::vec3(0.0f)), scale(glm::vec3(1.0f)), rotation(glm::vec3(0.0f))
 {
 	loadModel(path);
+	initAnimation();
 }
 
 void Model::Draw(Shader& shader)
@@ -115,12 +116,19 @@ std::vector<helmirt::RTTriangle> Model::trianglesToRT()
 	return triangles;
 }
 
+void Model::update(float dt)
+{
 
+	if (m_playAnimation) {
+		m_animator->updateAnimation(dt*12.0f);
+	}
+}
 
 void Model::loadModel(const char *path)
 {
 
 	
+	m_path = std::string(path);
 	std::cout << "Loading Model: " << path << "\n";
 	Assimp::Importer import;
 	//aiPreTransformVertices flag gives wrong number of bones!!!!!!!!!!!
@@ -264,6 +272,9 @@ void Model::setUniforms(Shader& shader)
 	glm::mat4 scaleMatrix = glm::mat4(1.0f);
 	scaleMatrix = glm::scale(scaleMatrix, scale);
 	shader.setUniformMat4f("model", translationMatrix*rotationMatrix*scaleMatrix);
+	if (m_playAnimation) {
+		setAnimationUniforms(shader);
+	}
 }
 
 void Model::setVertexBoneDataToDefault(Vertex& vertex)
@@ -328,6 +339,24 @@ void Model::SetVertexBoneData(Vertex& vertex, int boneID, float weight)
 	}
 }
 
+void Model::setAnimationUniforms(Shader& shader)
+{
+	auto transforms = m_animator->getfinalBoneMatrices();
+	for (int i = 0; i < transforms.size(); ++i) {
+		shader.setUniformMat4f(("finalBonesMatrices[" + std::to_string(i) + "]").c_str(), transforms[i]);
+	}
+}
+
+void Model::initAnimation()
+{
+	if (m_bonecounter != 0) {
+		Animation animation(m_path, m_boneInfoMap, m_bonecounter);
+		m_animations.push_back(animation);
+		m_animator = std::make_unique<Animator>(Animator(&m_animations[0]));
+		m_playAnimation = true;
+	}
+}
+
 void Model::simpleDraw(Shader& shader)
 {
 	setUniforms(shader);
@@ -336,7 +365,7 @@ void Model::simpleDraw(Shader& shader)
 	}
 }
 
-Animation::Animation(const std::string& animationPath, Model* model)
+Animation::Animation(const std::string& animationPath, std::map<std::string, BoneInfo>& boneinfomap, int bonecount)
 {
 	Assimp::Importer importer;
 	const aiScene* scene = importer.ReadFile(animationPath, aiProcess_Triangulate);
@@ -347,7 +376,7 @@ Animation::Animation(const std::string& animationPath, Model* model)
 	aiMatrix4x4 globalTransformation = scene->mRootNode->mTransformation;
 	globalTransformation = globalTransformation.Inverse();
 	readHierarchyData(m_rootNode, scene->mRootNode);
-	readMissingBones(animation, *model);
+	readMissingBones(animation, boneinfomap, bonecount);
 }
 
 Bone* Animation::findBone(const std::string& name)
@@ -362,12 +391,12 @@ Bone* Animation::findBone(const std::string& name)
 	else return &(*iter);
 }
 
-void Animation::readMissingBones(const aiAnimation* animation, Model& model)
+void Animation::readMissingBones(const aiAnimation* animation, std::map<std::string, BoneInfo>& boneinfomap, int bonecount)
 {
 	int size = animation->mNumChannels;
 
-	auto& boneInfoMap = model.getBoneInfoMap();//getting m_BoneInfoMap from Model class
-	int& boneCount = model.getBoneCount(); //getting the m_BoneCounter from Model class
+	auto& boneInfoMap = boneinfomap;//getting m_BoneInfoMap from Model class
+	int& boneCount = bonecount; //getting the m_BoneCounter from Model class
 
 	//reading channels(bones engaged in an animation and their keyframes)
 	for (int i = 0; i < size; i++)

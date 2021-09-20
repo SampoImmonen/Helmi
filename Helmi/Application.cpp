@@ -94,17 +94,17 @@ bool Application::loadScene(const std::string& filepath)
 {
 	//at the moment hardcoded
 	m_models.push_back(Model(filepath.c_str()));
-	Animation storm(filepath, &m_models[0]);
-	m_animation = storm;
-	m_animator = std::make_unique<Animator>(Animator(&m_animation));
-	//m_animation.getBoneCount();
-	//DirectionalLight dir(glm::vec3(-1.0f, -1.0f, 1.0f));
+	//Animation storm(filepath, &m_models[0]);
+	//m_animation = storm;
+	//m_animator = std::make_unique<Animator>(Animator(&m_animation));
+
 	std::unique_ptr<Light> ptr = std::make_unique<DirectionalLight>(DirectionalLight(glm::vec3(-2.0f, 4.0f, -1.0f)));
 	std::unique_ptr<Light> ptr2 = std::make_unique<SpotLight>(SpotLight(glm::vec3(0.0f, 4.0f, 0.0f), glm::vec3(2.0f, 0.0f, 2.0f)));
 	std::unique_ptr<Light> ptr3 = std::make_unique<PointLight>(PointLight(glm::vec3(0.0f, 5.0f, 0.0f)));
 	m_lights.push_back(std::move(ptr));
 	m_lights.push_back(std::move(ptr2));
 	m_lights.push_back(std::move(ptr3));
+	
 	Shader shader("shaders/BlinnPhongShader.vert", "shaders/BlinnPhongShader.frag"); // 0
 	m_shaders.push_back(shader);
 	Shader skybox("shaders/SkyboxShader.vert", "shaders/SkyboxShader.frag");
@@ -176,6 +176,7 @@ void Application::addModel()
 	std::string path = FileHandler::openFilePath();
 	//add exception handling for non obj or fbx files
 	m_models.push_back(Model(path.c_str()));
+
 }
 
 void Application::deleteModel(int i)
@@ -458,8 +459,10 @@ void Application::render()
 
 void Application::update()
 {
-	//update state of scene objects etc...
-	//no dynamic objects yet...
+	//currently only skeletal animations
+	for (auto& model : m_models) {
+		model.update(m_fpsinfo.deltatime);
+	}
 }
 
 void Application::bloomBlur(Shader& shader, int iterations)
@@ -493,6 +496,7 @@ void Application::updateShadowMaps()
 	glEnable(GL_DEPTH_TEST);
 	for (int i = 0; i < m_lights.size(); ++i) {
 		if (!m_lights[i]->castsShadows) continue;
+		//pointlight shadows
 		if (m_lights[i]->type == LightType::PointLight) {
 			m_shaders[8].UseProgram();
 			m_lights[i]->prepareShadowMap(m_shaders[8]);
@@ -501,6 +505,7 @@ void Application::updateShadowMaps()
 			}
 			
 		}
+		//directional light and spotlight shadows
 		else{
 			m_shaders[3].UseProgram();
 			m_lights[i]->prepareShadowMap(m_shaders[3]);
@@ -523,31 +528,17 @@ void Application::renderScene(const glm::mat4& projection, const glm::mat4& view
 	//draw skybox
 	m_skybox.draw(m_shaders[1], projection, view);
 	
-	//Calculate Animation hardcoded for start
-	m_animator->updateAnimation(m_fpsinfo.deltatime*12.0f);
 	//draw models
 	m_shaders[0].UseProgram();
 	m_lights[0]->setUniforms(m_shaders[0]);
 	m_lights[1]->setUniforms(m_shaders[0]);
 	m_lights[2]->setUniforms(m_shaders[0]);
-	//m_shaders[0].setUniform1f("exposure", exposure);
 	m_shaders[0].setUniformMat4f("lightSpaceMatrixDirLight", m_lights[0]->getLightSpaceMatrix());
 	m_shaders[0].setUniformMat4f("lightSpaceMatrixSpotLight", m_lights[1]->getLightSpaceMatrix());
-	//m_shadowmap.bindDepthTexture(3);
-	//m_shaders[0].setUniformMat4f("lightSpaceMatrixSpotLight", m_lights[1]->getLightSpaceMatrix());
-	//m_shaders[0].setUniformMat4f("model", model);
 	m_shaders[0].setUniformMat4f("projection", projection);
 	m_shaders[0].setUniformMat4f("view", view);
 	m_shaders[0].setUniformVec3("viewPos", m_glcamera.Position);
 	m_shaders[0].setUniform1f("bloomThreshold", m_bloomThreshold);
-	//m_shaders[0].setUniformInt("shadowMap", 3);
-	//m_shadowmap.bindDepthTexture(3);
-
-	auto transforms = m_animator->getfinalBoneMatrices();
-	for (int i = 0; i < transforms.size(); ++i) {
-		m_shaders[0].setUniformMat4f(("finalBonesMatrices[" + std::to_string(i) + "]").c_str(), transforms[i]);
-	}
-
 	for (auto& model : m_models) {
 		model.Draw(m_shaders[0]);
 	}
@@ -570,9 +561,7 @@ void Application::renderScenePBR(const glm::mat4& projection, const glm::mat4& v
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	m_HDRenvmap.draw(m_shaders[1], projection, view);
-	//draw skybox
-	//renderSkybox(projection, view);
-	//m_skybox.draw(m_shaders[1], projection, view);
+
 	m_shaders[9].UseProgram();
 	//set common uniforms
 	m_lights[0]->setUniformsPBR(m_shaders[9]);

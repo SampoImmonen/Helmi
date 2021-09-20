@@ -26,13 +26,6 @@ File explorer is windows specific
 5. Icons for light positions
 6. material editor
 ## images:
-![alt text](https://github.com/SampoImmonen/Helmi/blob/dockinggui/media/chesterfield.png)
-
-![alt text](https://github.com/SampoImmonen/Helmi/blob/dockinggui/media/conference.png)
-
-![alt text](https://github.com/SampoImmonen/Helmi/blob/dockinggui/media/shadowstest.png)
-
-![alt text](https://github.com/SampoImmonen/Helmi/blob/dockinggui/media/multimodel.png)
 
 ![alt text](https://github.com/SampoImmonen/Helmi-Rendering-engine/blob/master/media/PBRbloom.png)
 
@@ -40,6 +33,15 @@ File explorer is windows specific
 
 ![alt text](https://github.com/SampoImmonen/Helmi-Rendering-engine/blob/master/media/PBRspecular.png)
 
+![alt text](https://github.com/SampoImmonen/Helmi-Rendering-engine/blob/master/media/skeletalPBR.gif)
+
+![alt text](https://github.com/SampoImmonen/Helmi/blob/dockinggui/media/chesterfield.png)
+
+![alt text](https://github.com/SampoImmonen/Helmi/blob/dockinggui/media/conference.png)
+
+![alt text](https://github.com/SampoImmonen/Helmi/blob/dockinggui/media/shadowstest.png)
+
+![alt text](https://github.com/SampoImmonen/Helmi/blob/dockinggui/media/multimodel.png)
 
 ## Notes:
 #### PBR textures in OBJ files:

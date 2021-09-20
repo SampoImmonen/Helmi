@@ -18,7 +18,6 @@ const int MAX_BONE_INFLUENCE = 4;
 uniform mat4 finalBonesMatrices[MAX_BONES];
 
 
-
 out vec3 normal;
 out vec3 fragPos;
 out vec2 texCoords;
@@ -53,6 +52,6 @@ void main()
     gl_Position = projection*view*vec4(fragPos, 1.0);
     fragPosLightSpaceDirLight = lightSpaceMatrixDirLight * vec4(fragPos, 1.0);
     fragPosLightSpaceSpotLight = lightSpaceMatrixSpotLight * vec4(fragPos, 1.0);
-    normal = mat3(transpose(inverse(model))) * aNormal;
+    normal = mat3(transpose(inverse(model))) * vec3(boneTransform*vec4(aNormal, 0));
 	texCoords = atexCoords;
 }
