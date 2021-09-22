@@ -1,7 +1,7 @@
 #files
 *.vs
 *.swp
-
+*.json
 *BASE*
 *LOCAL*
 *REMOTE*

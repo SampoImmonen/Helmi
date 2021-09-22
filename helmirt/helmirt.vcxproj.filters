@@ -71,9 +71,6 @@
     <ClCompile Include="RTImage.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ScopedTimer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="rtTexture2D.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

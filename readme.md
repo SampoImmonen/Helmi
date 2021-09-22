@@ -18,13 +18,13 @@ File explorer is windows specific
 8. Simple whitted ray tracing with an area light
 9. Simple Scene editor
 10. PBR shading with Image-based lighting
+11. Skeletal Animation
 #### TO DO:
-1. path tracer for diffuse BRDF
-2. skeletal animation
-3. scene editor camera
-4. scene serialization
-5. Icons for light positions
-6. material editor
+1. Path tracer for diffuse BRDF
+2. Scene editor camera
+3. Scene serialization
+4. Icons for light positions
+5. Material editor
 ## images:
 
 ![alt text](https://github.com/SampoImmonen/Helmi-Rendering-engine/blob/master/media/PBRbloom.png)
@@ -42,6 +42,14 @@ File explorer is windows specific
 ![alt text](https://github.com/SampoImmonen/Helmi/blob/dockinggui/media/shadowstest.png)
 
 ![alt text](https://github.com/SampoImmonen/Helmi/blob/dockinggui/media/multimodel.png)
+
+## Controls
+
+- W, A, S, D and Mouse to move camera
+- L to place raytracing arealight to the position and direction of the camera
+- R to reload main shaders
+- Enter to ray trace (assets are not in sync yeat only starting model will be rendered)
+- right click on "models" to add a model
 
 ## Notes:
 #### PBR textures in OBJ files:

@@ -24,6 +24,7 @@
 #include "rtAreaLight.h"
 #include "Random.h"
 #include "imgui_internal.h"
+#include "Timer.h"
 
 
 struct SystemInfo {

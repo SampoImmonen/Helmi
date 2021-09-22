@@ -33,7 +33,6 @@ namespace helmirt {
 
 	bool helmirt::App::loadScene(const std::string& modelpath)
 	{
-		ScopedTimer;
 		m_renderer.loadScene(modelpath);
 		glm::mat4 model(1.0f);
 		model = glm::scale(model, glm::vec3(m_scale));
@@ -50,7 +49,6 @@ namespace helmirt {
 
 	void helmirt::App::renderRT()
 	{
-		PROFILE_FUNC();
 		m_renderer.render(m_rtimage, m_camera);
 	}
 

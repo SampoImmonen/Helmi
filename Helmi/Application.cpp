@@ -13,7 +13,7 @@ const float quadVertices[] = {
 	 1.0f,  1.0f,  1.0f, 1.0f
 };
 
-//used render rtLights
+//used to render rtLights
 const float lightquadVertices[] = {
 	-1.0f, 1.0f, 0.0f,  0.0f, 1.0f,
 	-1.0f, -1.0f, 0.0f,  0.0f, 0.0f,
@@ -227,7 +227,6 @@ void Application::initImGui()
 {
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
-	//imgui_io = ImGui::GetIO(); (void)imgui_io;
 	ImGuiIO& io = ImGui::GetIO(); (void)io;
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
@@ -275,7 +274,6 @@ void Application::ImGuiMouseCallback(const ImVec2& mousepos)
 {
 	m_mouseinfo.ImlastX = mousepos[0];
 	m_mouseinfo.ImlastY = mousepos[1];
-	//std::cout << m_mouseinfo.lastX << "\n";
 	std::cout << mousepos[0] << " " << mousepos[1] << "\n";
 }
 
@@ -459,6 +457,7 @@ void Application::render()
 
 void Application::update()
 {
+	PROFILE_FUNC();
 	//currently only skeletal animations
 	for (auto& model : m_models) {
 		model.update(m_fpsinfo.deltatime);
@@ -520,6 +519,7 @@ void Application::updateShadowMaps()
 
 void Application::renderScene(const glm::mat4& projection, const glm::mat4& view)
 {
+	PROFILE_FUNC();
 	m_hdrFBO.bind();
 	glEnable(GL_DEPTH_TEST);
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -539,6 +539,7 @@ void Application::renderScene(const glm::mat4& projection, const glm::mat4& view
 	m_shaders[0].setUniformMat4f("view", view);
 	m_shaders[0].setUniformVec3("viewPos", m_glcamera.Position);
 	m_shaders[0].setUniform1f("bloomThreshold", m_bloomThreshold);
+	
 	for (auto& model : m_models) {
 		model.Draw(m_shaders[0]);
 	}
@@ -563,6 +564,7 @@ void Application::renderScenePBR(const glm::mat4& projection, const glm::mat4& v
 	m_HDRenvmap.draw(m_shaders[1], projection, view);
 
 	m_shaders[9].UseProgram();
+
 	//set common uniforms
 	m_lights[0]->setUniformsPBR(m_shaders[9]);
 	m_shaders[9].setUniformMat4f("lightSpaceMatrixDirLight", m_lights[0]->getLightSpaceMatrix());
@@ -581,6 +583,7 @@ void Application::renderScenePBR(const glm::mat4& projection, const glm::mat4& v
 	m_HDRenvmap.bindIBLTexture(8);
 	m_HDRenvmap.bindPrefilterTexture(9);
 	m_HDRenvmap.bindBRDFLUT(10);
+	
 	for (auto& model : m_models) {
 		model.DrawPBR(m_shaders[9]);
 	}
